@@ -4,6 +4,7 @@
 #include <regex>
 #include <fstream>
 #include <unordered_map>
+#include <bitset>
 using namespace std;
 
 
