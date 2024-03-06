@@ -144,3 +144,33 @@ int main(){
 
     return 0;
 }
+
+
+
+checking base condition for s-type instruction 
+/*
+bool is_sinstruction(const string& line) {
+    string low_line = line;
+    transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
+
+    //  S-type instruction format
+    regex instRegex("\\s*(sw)\\s+(x[0-9]{1,2})\\s*,\\s*(imm[0-9]{1,2})\\(\\s*(x[0-9]{1,2})\\s*\\)\\s*");
+
+    smatch match;
+
+    if (regex_match(low_line, match, instRegex)) {
+        
+        if (!is_validRegister(match[2]) || !is_validImmediate(match[3]) || !is_validRegister(match[4])) {
+            cout << "Invalid register address or immediate value in the instruction.";
+            return false;
+        }
+
+        return true;
+    }
+    else {
+        cout << "Invalid instruction syntax.";
+        return false;
+    }
+}
+
+*/
