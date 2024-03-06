@@ -31,6 +31,53 @@ bool is_validRegister(const string& registerName){
 }
 
 
+string r_assembler(string & line, unordered_map<string, string> & reg_map){
+    unordered_map <string, string> opcode_bi_rep;
+
+    opcode_bi_rep["add"] = "0110011";
+    opcode_bi_rep["sub"] = "0110011";
+    opcode_bi_rep["sll"] = "0110011";
+    opcode_bi_rep["slt"] = "0110011";
+    opcode_bi_rep["sltu"] = "0110011";
+    opcode_bi_rep["xor"] = "0110011";
+    opcode_bi_rep["srl"] = "0110011";
+    opcode_bi_rep["or"] = "0110011";
+    opcode_bi_rep["and"] = "0110011";
+
+    unordered_map <string, string> funct3_bi_rep;
+    funct3_bi_rep["add"] = "000";
+    funct3_bi_rep["sub"] = "000";
+    funct3_bi_rep["sll"] = "001";
+    funct3_bi_rep["slt"] = "010";
+    funct3_bi_rep["sltu"] = "011";
+    funct3_bi_rep["xor"] = "100";
+    funct3_bi_rep["srl"] = "101";
+    funct3_bi_rep["or"] = "110";
+    funct3_bi_rep["and"] = "111";
+
+
+    regex instruc("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(x[0-9]|x[1-2][0-9]|x31|x30)\\s*,\\s*(x[0-9]|x[1-2][0-9]|x31|x30)\\s*,\\s*(x[0-9]|x[1-2][0-9]|x31|x30)\\s*");
+
+    smatch match;
+    bool temp = regex_match(line, match, instruc);
+
+    string regd = reg_map[match[2]];
+    string regs1 = reg_map[match[4]];
+    string regs2 = reg_map[match[6]];
+    string fun3_bicode = funct3_bi_rep[match[1]] ; 
+    string opcode_bi = opcode_bi_rep[match[1]] ;
+    string output_bi_code;
+    if(match[1] != "sub"){
+        string output_bi_code = "0000000" + regs2 + regs1 + fun3_bicode + regd + opcode_bi;
+    }
+    else{
+        string output_bi_code = "0100000" + regs2 + regs1 + fun3_bicode + regd + opcode_bi;
+    }
+    
+    return output_bi_code;
+}
+
+
 bool is_rinstruction(const string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
