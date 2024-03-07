@@ -24,13 +24,6 @@ bool checkLastLine(const string& filename, const regex& regexPattern){
 }
 
 
-bool is_validRegister(const string& registerName){
-    
-    regex reg("(x[0-9]|x[1-2][0-9]|x31|x30)");
-    return regex_match(registerName, reg);
-}
-
-
 string r_assembler(string & line, unordered_map<string, string> & reg_map){
     unordered_map <string, string> opcode_bi_rep;
 
@@ -56,7 +49,7 @@ string r_assembler(string & line, unordered_map<string, string> & reg_map){
     funct3_bi_rep["and"] = "111";
 
 
-    regex instruc("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(x[0-9]|x[1-2][0-9]|x31|x30)\\s*,\\s*(x[0-9]|x[1-2][0-9]|x31|x30)\\s*,\\s*(x[0-9]|x[1-2][0-9]|x31|x30)\\s*");
+    regex instruc("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*");
 
     smatch match;
     bool temp = regex_match(line, match, instruc);
@@ -82,18 +75,13 @@ bool is_rinstruction(const string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
    
-    regex instRegex("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(x[0-9]{1,2})\\s*,\\s*(x[0-9]{1,2})\\s*,\\s*(x[0-9]{1,2})\\s*");
+    regex instRegex("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*");
 
     smatch match;
 
     
     if(regex_match(low_line,match,instRegex)){
         
-        if(!is_validRegister(match[2])||!is_validRegister(match[3])||!is_validRegister(match[4])){
-            cout<<"Invalid register address in the instruction.";
-            return false;
-        }
-
         return true;
     } 
     else{
@@ -107,11 +95,39 @@ int main(){
 
     unordered_map<string, string> register_map;
 
-    for (int i = 0; i <= 31; ++i) {
-        std::string register_name = "x" + to_string(i);
-        std::string binary = std::bitset<7>(i).to_string();
-        register_map[register_name] = binary;
-    }
+    register_map["zero"] = "00000";
+    register_map["ra"] = "00001";
+    register_map["sp"] = "00010";
+    register_map["gp"] = "00011";
+    register_map["tp"] = "00100";
+    register_map["t0"] = "00101";
+    register_map["t1"] = "00110";
+    register_map["t2"] = "00111";
+    register_map["s0"] = "01000";
+    register_map["fp"] = "01000";
+    register_map["s1"] = "01001";
+    register_map["a0"] = "01010";
+    register_map["a1"] = "01011";
+    register_map["a2"] = "01100";
+    register_map["a3"] = "01101";
+    register_map["a4"] = "01110";
+    register_map["a5"] = "01111";
+    register_map["a6"] = "10000";
+    register_map["a7"] = "10001";
+    register_map["s2"] = "10010";
+    register_map["s3"] = "10011";
+    register_map["s4"] = "10100";
+    register_map["s5"] = "10101";
+    register_map["s6"] = "10110";
+    register_map["s7"] = "10111";
+    register_map["s8"] = "11000";
+    register_map["s9"] = "11001";
+    register_map["s10"] = "11010";
+    register_map["s11"] = "11011";
+    register_map["t3"] = "11100";
+    register_map["t4"] = "11101";
+    register_map["t5"] = "11110";
+    register_map["t6"] = "11111";
 
 
 
