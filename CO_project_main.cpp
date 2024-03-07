@@ -195,7 +195,7 @@ int main(){
 
 
 
-checking base condition for s-type instruction 
+checking the base condition for s-type instruction ;
 /*
 bool is_sinstruction(const string& line) {
     string low_line = line;
@@ -221,4 +221,20 @@ bool is_sinstruction(const string& line) {
     }
 }
 
+int main() {
+    // Testing the is_sinstruction function //
+    string instruction;
+    cout << "Enter the S-type instruction: ";
+    getline(cin, instruction);
+
+    if (is_sinstruction(instruction)) {
+        cout << "Valid S-type instruction." <<;
+    }
+    else {
+        cout << "Invalid S-type instruction." <<;
+    }
+
+    return 0;
+}
 */
+
