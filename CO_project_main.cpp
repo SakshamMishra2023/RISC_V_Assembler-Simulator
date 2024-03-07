@@ -3,6 +3,8 @@
 #include <string>
 #include <regex>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 #include <unordered_map>
 #include <bitset>
 
@@ -157,7 +159,6 @@ string classifier(string &line, unordered_map<string,string> &reg_map){
 
 }
 
-
 int main(){
 
     unordered_map<string, string> register_map;
@@ -197,9 +198,25 @@ int main(){
     register_map["t6"] = "11111";
 
     regex Vir_halt("\\s*beq\\s+(zero)\\s*,\\s*(zero)\\s*,\\s*(0x00000000)\\s*");
+    string Ifilename= "inp.txt"
+    //a map that store line string as key and hexadecimal adress as value
 
-    //string line ="   slt  x2,     x3,        x1";
-    string Ifilename= "";
+    if(inputFile.is_open()){
+        while(getline(inputFile, line1)){
+            if(!line1.empty()){
+                    if(classifier(line1, register_map) != "stop"){
+                    std::stringstream ss;
+                    ss << std::setfill('0') << std::setw(8) << std::hex << address;
+                    lineAddressMap[line1] = ss.str();
+                    address += 0x00000001;
+                }
+            }
+        }
+        inputFile.close();
+    } else {
+        std::cout << "Unable to open file";
+    }
+    
     ifstream input_file(Ifilename);
     ofstream output_file("");
     string line;
