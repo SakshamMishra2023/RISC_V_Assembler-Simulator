@@ -24,6 +24,34 @@ bool checkLastLine(const string& filename, const regex& regexPattern){
 }
 
 
+bool containsVirHalt(string& filename,regex& regexPattern) {
+    // Input file stream for reading from the input file
+    ifstream inputFile(filename);
+
+    // Check if the input file is open
+    if(!inputFile.is_open()){
+        cout<< "Error opening input file.\n";
+        return false;
+    }
+
+    string line;
+    bool patternFound = false;
+
+    while(getline(inputFile,line)){
+        // Check if the line matches the specified regex pattern
+        if(regex_search(line, regexPattern)){
+            patternFound = true;
+            break;  // Stop searching once the pattern is found
+        }
+    }
+
+    // Close the input file
+    inputFile.close();
+
+    return patternFound;
+}
+
+
 string r_assembler(string & line, unordered_map<string, string> & reg_map){
     unordered_map <string, string> opcode_bi_rep;
 
@@ -140,21 +168,25 @@ int main(){
     ofstream output_file("");
     string line;
 
-    if(!input_file.is_open()){
-        if(checkLastLine(Ifilename, Vir_halt)){
-            while(getline(input_file, line)){
-                if(!line.empty()){
-
+    if(!containsVirHalt(Ifilename, Vir_halt)){
+        cout << "missing halt instruction in input file"; 
+    }
+    else{
+        if(!input_file.is_open()){
+            if(checkLastLine(Ifilename, Vir_halt)){
+                while(getline(input_file, line)){
+                    if(!line.empty()){
+    
+                    }
                 }
+            }
+            else{
+                cout<< "No Virtual Halt at end of input instructions";
             }
         }
         else{
-            cout<< "No Virtual Halt at end of input instructions";
+            cout<< "error in opening file";
         }
-
-    }
-    else{
-        cout<< "error in opening file";
     }
     
 
