@@ -5,10 +5,10 @@
 #include <fstream>
 #include <unordered_map>
 #include <bitset>
+
 using namespace std;
 
-
-bool checkLastLine(const string& filename, const regex& regexPattern){
+bool checkLastLine(string& filename, regex& regexPattern){
     ifstream inputFile(filename);
     
     string line;
@@ -99,7 +99,7 @@ string r_assembler(string & line, unordered_map<string, string> & reg_map){
 }
 
 
-bool is_rinstruction(const string& line){
+bool is_rinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
    
@@ -107,20 +107,16 @@ bool is_rinstruction(const string& line){
 
     smatch match;
 
-    
     if(regex_match(low_line,match,instRegex)){
-        
         return true;
     } 
     else{
-        cout<< "Invalid instruction syntax.";
         return false;
     }
 }
 
 
-
-bool is_sinstruction(const string& line){
+bool is_sinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
 
@@ -138,13 +134,27 @@ bool is_sinstruction(const string& line){
         }
         else{
             cout<< "Invalid Immediate";
-            return false;
+            exit(0);
         }
     }
     else {
-        cout << "Invalid instruction syntax.";
         return false;
     }
+}
+
+string classifier(string &line, unordered_map<string,string> &reg_map){
+
+    if(is_rinstruction(line)){
+        return r_assembler(line , reg_map);
+    }
+    if(is_sinstruction(line)){
+        return s_assembler(line , reg_map);
+    }
+    else{
+        cout<< "invalid syntax";
+        return "stop";
+    }
+
 }
 
 
@@ -186,9 +196,6 @@ int main(){
     register_map["t5"] = "11110";
     register_map["t6"] = "11111";
 
-
-
-
     regex Vir_halt("\\s*beq\\s+(zero)\\s*,\\s*(zero)\\s*,\\s*(0x00000000)\\s*");
 
     //string line ="   slt  x2,     x3,        x1";
@@ -205,7 +212,12 @@ int main(){
             if(checkLastLine(Ifilename, Vir_halt)){
                 while(getline(input_file, line)){
                     if(!line.empty()){
-    
+                        if(classifier(line, register_map) != "stop"){
+
+                        }
+                        else{
+                            exit(0);
+                        }
                     }
                 }
             }
@@ -224,46 +236,5 @@ int main(){
 
 
 
-checking the base condition for s-type instruction ;
-/*
-bool is_sinstruction(const string& line) {
-    string low_line = line;
-    transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
 
-    //  S-type instruction format
-    regex instRegex("\\s*(sw)\\s+(x[0-9]{1,2})\\s*,\\s*(imm[0-9]{1,2})\\(\\s*(x[0-9]{1,2})\\s*\\)\\s*");
-
-    smatch match;
-
-    if (regex_match(low_line, match, instRegex)) {
-        
-        if (!is_validRegister(match[2]) || !is_validImmediate(match[3]) || !is_validRegister(match[4])) {
-            cout << "Invalid register address or immediate value in the instruction.";
-            return false;
-        }
-
-        return true;
-    }
-    else {
-        cout << "Invalid instruction syntax.";
-        return false;
-    }
-}
-
-int main() {
-    // Testing the is_sinstruction function //
-    string instruction;
-    cout << "Enter the S-type instruction: ";
-    getline(cin, instruction);
-
-    if (is_sinstruction(instruction)) {
-        cout << "Valid S-type instruction." <<;
-    }
-    else {
-        cout << "Invalid S-type instruction." <<;
-    }
-
-    return 0;
-}
-*/
-
+ 
