@@ -221,6 +221,33 @@ bool is_sinstruction(const string& line) {
     }
 }
 
+bool is_sinstruction(const string& line){
+    string low_line = line;
+    transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
+
+    //  S-type instruction format
+    regex instRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*\\d+\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+
+    smatch match;
+
+    regex swRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d{1,4})\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    
+
+    if(regex_match(low_line, match, instRegex)){
+        if(regex_match(low_line, match,swRegex )){
+            return true;
+        }
+        else{
+            cout<< "Invalid Immediate";
+            return false;
+        }
+    }
+    else {
+        cout << "Invalid instruction syntax.";
+        return false;
+    }
+}
+
 int main() {
     // Testing the is_sinstruction function //
     string instruction;
