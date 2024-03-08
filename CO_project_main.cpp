@@ -10,6 +10,74 @@
 
 using namespace std;
 
+char flip(char c) {return (c == '0')? '1': '0';} 
+int twoscomplement(string bin){ 
+    int n=bin.length(); 
+    int i; 
+    string ones, twos; 
+    ones=twos=""; 
+    //  for ones complement flip every bit 
+    for(i=0;i<n;i++){ 
+        ones+=flip(bin[i]); 
+    //  for two's complement go from right to left in 
+    //  ones complement and if we get 1 make, we make 
+    //  them 0 and keep going left when we get first 
+    //  0, make that 1 and go out of loop 
+    twos=ones; 
+    }
+
+    for (i=n-1;i>=0;i--){ 
+        if (ones[i]=='1'){ 
+            twos[i]='0'; 
+        }
+        else{ 
+            twos[i]='1'; 
+            break; 
+        } 
+    } 
+    // If No break : all are 1  as in 111  or  11111; 
+    // in such case, add extra 1 at beginning 
+    if (i==-1) 
+        twos='1'+twos; 
+    //cout << "1's complement: " << ones << endl; 
+    //cout << "2's complement: " << twos << endl;
+    return twos;
+} 
+int bin(string& imm){
+    int n=stoi(imm);
+    int binaryNum[32]; 
+    int i=0;
+    int m;
+    if(n>0){
+        m=n;
+    } 
+    else{
+        m=-n;
+    }
+    while (m>0) { 
+        binaryNum[i]=m%2; 
+        m=m/2; 
+        i++; 
+    } 
+    string c="";
+    for (int j=i-1;j>=0;j--){
+        c+=to_string(binaryNum[j]);
+    } 
+    int d=c.length();
+    string v="0";
+    for(int p=1;p<(20-d);p++){
+        v+="0";
+    }
+    c=v+c;
+    cout<<c<<endl;
+    if(n>=0){
+        return c;
+    }
+    else{
+        return twoscomplement(c);
+    }
+    
+}
 bool checkLastLine(string& filename, regex& regexPattern){
     ifstream inputFile(filename);
     
@@ -100,6 +168,21 @@ string r_assembler(string & line, unordered_map<string, string> & reg_map){
     return output_bi_code;
 }
 
+string u_assembler(string& line,unordered_map<string,string>& reg_map){
+    unordered_map<string,string> opcode_bi_rep;
+    opcode_bi_rep["lui"]="0110111";
+    opcode_bi_rep["auipc"]="0010111";
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s+([(-1048576)-1048575])");
+
+    smatch match;
+    bool temp=regex_match(line,match,instructions);
+    string opcode_bi=opcode_bi_rep[match[1]];
+    string regd=reg_map[match[2]];
+    string imm=immme_map[match[3]];
+    string output_bicode=opcode_bi+regd+bin(imm);
+
+    return output_bicode;
+}
 
 bool is_rinstruction(string& line){
     string low_line = line;
@@ -142,6 +225,19 @@ bool is_sinstruction(string& line){
     else {
         return false;
     }
+}
+
+bool is_uinstructions(string& line){
+    string low_line=line;
+    transform(low_line.begin(),low_line.end(),low_line.begin(),::tolower);
+
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s+([(-1048576)-1048575])")
+    smatch match;
+    
+    if(regex_match(low_line,match,instructions)){
+        return true;
+    }
+    else return false;
 }
 
 string classifier(string &line, unordered_map<string,string> &reg_map){
