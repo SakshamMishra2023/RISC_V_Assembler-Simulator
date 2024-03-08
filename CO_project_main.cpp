@@ -187,7 +187,8 @@ string u_assembler(string& line,unordered_map<string,string>& reg_map){
 bool is_rinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
-   
+    
+    // R-type instruction format //
     regex instRegex("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*");
 
     smatch match;
@@ -230,7 +231,8 @@ bool is_sinstruction(string& line){
 bool is_uinstructions(string& line){
     string low_line=line;
     transform(low_line.begin(),low_line.end(),low_line.begin(),::tolower);
-
+    
+    // U-type instruction format //
     regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s+([(-1048576)-1048575])")
     smatch match;
     
@@ -346,6 +348,46 @@ int main(){
 
     return 0;
 }
+
+
+
+ code to find 12 bits immediate value for s type instruction
+/*
+string decimalToBinary(int decimal) {
+    // Convert the decimal value to its 32-bit binary representation
+    bitset<32> binary(decimal);
+    return binary.to_string();
+}
+
+string extractTwelveBitTwosComplement(const string& binaryBits) {
+    // Regular expression to match the least significant 12 bits
+    regex regex("(\\d{12})$");
+
+    smatch match;
+
+    if (regex_search(binaryBits, match, regex)) {
+        // Extract the matched 12 bits
+        string twelveBitsStr = match[1];
+
+        // Convert the matched 12 bits to a bitset
+        bitset<12> twelveBits(twelveBitsStr);
+
+        
+        // perform two's complement conversion
+        if (twelveBits[11] == 1) {
+            twelveBits = ~twelveBits;
+            twelveBits.flip();
+        }
+        
+
+        
+        return twelveBits.to_string();
+    }
+
+    // Return an empty string if no match is found
+    return "";
+}
+*/
 
 
 
