@@ -216,6 +216,45 @@ string s_assembler(string& line, unordered_map<string,string> reg_map){
 
 }
 
+string j_assembler(string &line, unordered_map<string,string> &reg_map, int program_counter,unordered_map <string , int> label_map){
+    regex instruc("\\s*jal\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(.*)\\s*$");
+    smatch match;
+    bool x = regex_match(line, match, instruc);
+
+    int lab = label_map[match[4]];
+    int pc = program_counter;
+    
+    int imm = 4*(pc - lab) ;
+    string imm_bin_code;
+    if(imm >= 0 && imm<= 524287){
+        imm_bin_code = bitset<20>(imm).to_string();
+    }
+    else if(imm < 0 && imm>= -524288){
+    
+        int positiveEquivalent = 1048576 + imm; // 2^12
+        imm_bin_code = bitset<20>(positiveEquivalent).to_string();
+    }
+    else{
+        cerr<<"Immediate value out of bound";
+        exit(1);
+    }
+
+    string regd = reg_map[match[2]];
+    
+    string opcod = "1101111";
+    //string fu3 = funct3[match[1]];
+
+    char temp11 = imm_bin_code[9];
+    string imm11(1,temp11);
+    string imm1912 = imm_bin_code.substr(1,8);
+    char temp20 = imm_bin_code[0];
+    string imm20(1,temp20);
+    string imm101 = imm_bin_code.substr(10,10);
+
+    string out = imm20 + imm101 + imm11  + imm1912 + regd + opcod;
+    return out;
+}
+
 bool is_rinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
@@ -272,6 +311,19 @@ bool is_uinstructions(string& line){
         return true;
     }
     else return false;
+}
+
+bool is_jinstruction(string &line, unordered_map<string,int> label_map){
+    regex instruc("\\s*jal\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(.*)\\s*$");
+    smatch match;
+    if(regex_match(line, match, instruc)){
+        auto it = label_map.find(match[6]);
+        if(it!=label_map.end()){
+            return true;
+        }
+    }
+    return false;
+
 }
 
 string classifier(string &line, unordered_map<string,string> &reg_map){
