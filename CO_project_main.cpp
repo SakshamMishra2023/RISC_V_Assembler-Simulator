@@ -184,6 +184,38 @@ string u_assembler(string& line,unordered_map<string,string>& reg_map){
     return output_bicode;
 }
 
+string s_assembler(string& line, unordered_map<string,string> reg_map){
+
+    regex instRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*\\d+\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match;
+    bool tmp = regex_match(line, match,instRegex);
+    string op_code = "0100011";
+    string imm_string = match[4] ;
+    int imm = stoi(imm_string);
+    string imm_bin_code;
+    if(imm >= 0 && imm<= 2047){
+        imm_bin_code = bitset<12>(imm).to_string();
+    }
+    else if(imm < 0 && imm>= -2048){
+    
+        int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = bitset<12>(positiveEquivalent).to_string();
+    }
+    else{
+        cerr<<"Immediate value out of bound";
+        exit(1);
+    }
+    string fun3 = "010";
+    string regs2 = match[2];
+    string regs1 = match[6];
+    string imm04 = imm_bin_code.substr(7,5);
+    string imm511 = imm_bin_code.substr(0,7);
+
+    string out = imm511 + regs2 + regs2 + fun3 + imm04 + op_code;
+    return out;
+
+}
+
 bool is_rinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
