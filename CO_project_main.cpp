@@ -272,6 +272,16 @@ bool is_rinstruction(string& line){
     }
 }
 
+bool is_i_instruction(string instruction){
+    // returns true if the sent instruction is of an i type. False if not (If the input instruction is an error, it  returns false)
+    // Guys, it seems I am having some issues in this. It sometimes gives incorrect answers. Thanks, Siddharth.
+    regex instruction_pattern("\\s*(addi|lw|jalr|sltiu)\\s+(zero|ra|[sgtf]p|t[0-6]|s[0-11]|a[0-7])\\s*,\\s*(zero|ra|[sgtf]p|t[0-6]|s[0-11]|a[0-7])\\s*,\\s*[(-2048)-2047]") ;
+    if (regex_match(instruction, instruction_pattern)){
+        return true ;
+    }    
+    return false ;
+}  
+
 
 bool is_sinstruction(string& line){
     string low_line = line;
