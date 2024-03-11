@@ -165,7 +165,6 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
         int imm =stoi(last_arg);
         string imm_bin_code;
     
-    
         //int positiveEquivalent = 4096 + imm; // 2^12
         imm_bin_code = decimalToBinary16(imm);
         //cout<<imm_bin_code<<endl;
