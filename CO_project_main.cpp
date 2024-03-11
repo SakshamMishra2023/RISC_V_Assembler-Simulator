@@ -818,7 +818,7 @@ int main(){
     register_map["t6"] = "11111";
 
     regex Vir_halt("\\s*beq\\s+(zero)\\s*,\\s*(zero)\\s*,\\s*(0x00000000)\\s*");
-    string Ifilename= "inp.txt"
+    string Ifilename= "inp.txt";
     string line1;
     ifstream input_file("inp.txt");
     //a map that store line string as key and hexadecimal adress as value
