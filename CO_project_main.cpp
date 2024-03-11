@@ -131,7 +131,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     int lab = label_map[match[4]];
     int pc = program_counter;
     //cout<<pc<<" "<<lab;
-    int sub = pc -lab;
+    int sub = lab -pc;
     //cout<<sub;
     int imm = 4*sub ;
     //out<<imm;
@@ -164,6 +164,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     else if(is_number(last_arg)){
         int imm =stoi(last_arg);
         string imm_bin_code;
+    
     
         //int positiveEquivalent = 4096 + imm; // 2^12
         imm_bin_code = decimalToBinary16(imm);
@@ -206,7 +207,6 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
     //out<<imm;
     string imm_bin_code;
     if(imm >= 0){
-        
          imm_bin_code = decimalToBinary32(imm);
     }
     else{
@@ -275,7 +275,6 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
     //out<<imm;
     string imm_bin_code;
     if(imm >= 0){
-        
          imm_bin_code = decimalToBinary32(imm);
     }
     else{
@@ -324,7 +323,6 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
         return out;
         }
         else{
-            
             cerr<<"Immediate out of range";
             exit(1);
         }
@@ -374,7 +372,6 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
 
             return output_bicode;        
     }
-        
     else if(regex_match(line, match2, instruc1)){
         //int imm = stoi(match2[4]);
         string imm_str = match2[3];
@@ -396,7 +393,6 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
 
             return output_bicode;
     }
-        
     else if(regex_match(line, match3, instruc3)){
         int imm = stoi(match3[4]);
         //cout<<imm<<endl;
