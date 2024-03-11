@@ -495,7 +495,7 @@ string s_assembler(string& line, unordered_map<string,string> &reg_map){
     regex instRegex("\\s*(sw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
 
     smatch match;
-    bool tmp = regex_match(line, match,instRegex);
+    if(regex_match(line, match,instRegex)){
     string op_code = "0100011";
     string imm_string = match[3] ;
     int imm = stoi(imm_string);
@@ -512,6 +512,7 @@ string s_assembler(string& line, unordered_map<string,string> &reg_map){
 
     string out = imm511 + regs2 + regs2 + fun3 + imm04 + op_code;
     return out;
+    }
 
 }
 
@@ -603,10 +604,11 @@ bool is_sinstruction(string& line){
     //transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
 
     //  S-type instruction format
-    regex instRegex("\\s*sw\\s+(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    regex instRegex("\\s*(sw)\\s+(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
     smatch match;
-    int first1 = stoi(match[3]);
+    
     if(regex_match(low_line, match,instRegex)){
+        int first1 = stoi(match[3]);
         if(first1>=-2048 && first1  <= 2047){
             return true;
         }
