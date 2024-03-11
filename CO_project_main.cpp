@@ -753,7 +753,7 @@ string classifier(string &line, unordered_map<string,string> &reg_map,int &progr
      
         else{
 
-        cerr<<"Invalid Syntax at line "<<program_counter;
+        cerr<<"Invalid Syntax at line "<<program_counter + 1;
         exit(1);
         return "Invalid Syntax";
     }
