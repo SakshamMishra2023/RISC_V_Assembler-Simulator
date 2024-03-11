@@ -11,7 +11,7 @@
 using namespace std;
 
 char flip(char c) {return (c == '0')? '1': '0';} 
-int twoscomplement(string bin){ 
+int twoscomplement(string bin){ // shouldn't the return type of this instruction be string ?
     int n=bin.length(); 
     int i; 
     string ones, twos; 
