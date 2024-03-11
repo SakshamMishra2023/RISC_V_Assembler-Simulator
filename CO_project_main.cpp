@@ -255,6 +255,100 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     return out;
 }
 
+
+string binary_converter_for_int(string value){
+    // takes a value b/w -2048 and +2047 and gives the binary representation , in 12 bits
+    string ans ;
+    int num = abs(stoi(value)) ;
+    for(int j = 0; j < 12; j++){
+        int rem = num % 2 ;
+        string s_rem = to_string(rem) ;
+        num = num / 2 ;
+        ans = s_rem + ans ;
+    }
+    if (value[0] == '-'){
+        ans = twoscomplement(ans) ;
+    }
+    return ans ;
+}
+
+int idx_of_first_non_s_char(string s){
+    // returns the index of the first non-space char in string, and -1 if no such char is there
+    int l = s.length() ;
+    for(int i = 0; i < l; i++){
+        if (s[i] != ' '){
+            return i ;
+        }
+    }
+    return -1 ;
+}
+
+string i_assembler(string instruction, unordered_map<string, string> &register_map){
+    int l = instruction.length() ;
+
+    for(int i = 0; i < l; i++){
+        if (instruction[i] == '(' or instruction[i] == ')' or instruction[i] == ','){
+            //cout << i << " " ;
+            instruction[i] = ' ' ; // remove any parentheses or comma occuring, the instruction is now only space separated.
+        } 
+    }
+    
+    int idx_o_f_n_s_c_in_instruction = idx_of_first_non_s_char(instruction) ;
+    string cpy_ins = instruction.substr(idx_o_f_n_s_c_in_instruction, l - idx_o_f_n_s_c_in_instruction) ;
+
+    string assmbly[4] ;
+    int counter = 0 ;
+
+    while (counter < 4){
+        int cpy_l = cpy_ins.length() ;
+        string token ;
+        int i = 0 ;
+        while (cpy_ins[i] != ' ' and i < cpy_l){
+            token = token + cpy_ins[i] ; 
+            i++ ;
+        }
+        assmbly[counter] = token ;
+        if (counter != 3){ // don't do any operation on the last token.
+        cpy_ins = cpy_ins.substr(i, cpy_l - i) ; // now, length of cpy_ins is cpy_l - i
+
+        int idx_o_f_n_s_c_in_cpy_ins = idx_of_first_non_s_char(cpy_ins) ;
+
+        cpy_ins = cpy_ins.substr(idx_o_f_n_s_c_in_cpy_ins, (cpy_l - i) - idx_o_f_n_s_c_in_cpy_ins) ;
+        }
+        counter++ ;
+
+    }
+
+    // Now, we'll generate the output in binary. It's form: imm(31:20), rs1(19:15), funct3(14:12), rd(11:7), opcode(6:0)
+
+    string op_code = assmbly[0] ;
+    string rd = assmbly[1] ;
+    string rs = assmbly[2] ;
+    string imm = assmbly[3] ;
+
+    if (op_code == "lw"){
+        rd = assmbly[1] ; 
+        imm = assmbly[2] ; 
+        rs = assmbly[3] ; 
+    }
+
+    unordered_map<string, string> opcode_binary ;
+    opcode_binary["lw"] = "0000011" ; opcode_binary["addi"] = "0010011" ; opcode_binary["sltiu"] = "0010011" ; 
+    opcode_binary["jalr"] = "1100111" ;  
+
+    unordered_map<string, string> opcode_func3 ;
+    opcode_func3["lw"] = "010" ; opcode_func3["addi"] = "000" ; opcode_func3["sltiu"] = "011" ; opcode_func3["jalr"] = "000" ; 
+
+    string binary_representation ;
+    binary_representation = binary_converter_for_int(imm) + register_map[rs] + opcode_func3[op_code] + register_map[rd] + opcode_binary[op_code] ;
+    
+    return binary_representation ;
+
+
+}
+
+
+
 bool is_rinstruction(string& line){
     string low_line = line;
     transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
