@@ -732,67 +732,6 @@ bool is_haltinstruc(string&line, unordered_map<string,string> &reg_map){
     }
 }
 
-/* Below, in comments, is the function to check if it's an i instruction, along with range checking. */
-
-// bool is_iinstruction(string &line){
-//     bool ans = false ;
-//     regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
-//     regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
-//     regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
-
-//     smatch match1;
-//     smatch match2;
-//     smatch match3;
-
-//     if(regex_match(line, match1, instruc1)){
-//         //cout<<"lw";
-//         ans = true ;
-//     }    
-//     else if(regex_match(line, match2, instruc2)){
-//         //cout<<"addi";
-//         ans = true;
-//     }
-//     else if(regex_match(line, match3, instruc3)){
-//         //cout<<"jalr";
-//         ans = true;
-//     }
-
-//     int line_length = line.length() ;
-//     int line_end_idx = line_length - 1 ;
-//     int digit_start_idx ; // includes the '-' sign for negative nos.
-//     int digit_end_idx ;
-//     int i = line_end_idx ;
-//     while (true) {
-//         char line_char = line[i] ;
-//         if ( isdigit(line_char) ){ // The first digit (starting from the end of the assembly instruction) is the last digit of the integer.  
-//             digit_end_idx = i ;
-//             break;
-//         } 
-//         i-- ;
-//     }
-//     while (true) {
-//         char line_char = line[i] ;
-//         if ( line_char == ',' ){
-//             digit_start_idx = i + 1 ; // The digits (including '-' sign, if there) occurs after the last comma. Spaces between the number are dealt by the stoi function.
-//             break;
-//         } 
-//         i-- ;
-//     }
-//     // Now, the string between digit_start_idx and digit_end_idx , both inclusive, represents an integer, with sign if it's -ve
-//     int digit_len = digit_start_idx - digit_end_idx + 1 ;
-//     string str_digit = line.substr(digit_start_idx, digit_len) ;
-//     int int_digit = stoi(str_digit) ;
-//     cout << int_digit << " " ;
-//     if (int_digit > 2047 or int_digit < -2048){
-//         ans = false ;
-//     }
-//     else{
-//         ans = true ;
-//     }
-
-//     return ans ;
-// }
-
 
 string classifier(string &line, unordered_map<string,string> &reg_map,int &program_counter,unordered_map<string,int> &label_map){
     //cout<<is_label(line);
