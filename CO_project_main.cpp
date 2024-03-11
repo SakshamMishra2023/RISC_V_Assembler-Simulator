@@ -10,73 +10,11 @@
 
 using namespace std;
 
-char flip(char c) {return (c == '0')? '1': '0';} 
-int twoscomplement(string bin){ // shouldn't the return type of this instruction be string ?
-    int n=bin.length(); 
-    int i; 
-    string ones, twos; 
-    ones=twos=""; 
-    //  for ones complement flip every bit 
-    for(i=0;i<n;i++){ 
-        ones+=flip(bin[i]); 
-    //  for two's complement go from right to left in 
-    //  ones complement and if we get 1 make, we make 
-    //  them 0 and keep going left when we get first 
-    //  0, make that 1 and go out of loop 
-    twos=ones; 
-    }
-
-    for (i=n-1;i>=0;i--){ 
-        if (ones[i]=='1'){ 
-            twos[i]='0'; 
-        }
-        else{ 
-            twos[i]='1'; 
-            break; 
-        } 
-    } 
-    // If No break : all are 1  as in 111  or  11111; 
-    // in such case, add extra 1 at beginning 
-    if (i==-1) 
-        twos='1'+twos; 
-    //cout << "1's complement: " << ones << endl; 
-    //cout << "2's complement: " << twos << endl;
-    return twos;
-} 
-int bin(string& imm){
-    int n=stoi(imm);
-    int binaryNum[32]; 
-    int i=0;
-    int m;
-    if(n>0){
-        m=n;
-    } 
-    else{
-        m=-n;
-    }
-    while (m>0) { 
-        binaryNum[i]=m%2; 
-        m=m/2; 
-        i++; 
-    } 
-    string c="";
-    for (int j=i-1;j>=0;j--){
-        c+=to_string(binaryNum[j]);
-    } 
-    int d=c.length();
-    string v="0";
-    for(int p=1;p<(20-d);p++){
-        v+="0";
-    }
-    c=v+c;
-    cout<<c<<endl;
-    if(n>=0){
-        return c;
-    }
-    else{
-        return twoscomplement(c);
-    }
-    
+bool keyExists(const std::unordered_map<string, int>& map, const string& key) {
+    return map.find(key) != map.end();
+}
+bool is_number(string& s){
+     return !s.empty() && std::find_if(s.begin() + (s[0] == '-' ? 1 : 0), s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();;
 }
 bool checkLastLine(string& filename, regex& regexPattern){
     ifstream inputFile(filename);
@@ -93,6 +31,49 @@ bool checkLastLine(string& filename, regex& regexPattern){
     return regex_match(lastNonEmptyLine, regexPattern);
 }
 
+string decimalToBinary32(int decimal) {
+    std::bitset<32> binaryRepresentation;
+
+    if (decimal < 0) {
+        // Calculate the two's complement
+        int positiveEquivalent = 4294967296 + decimal; // 2^12
+        binaryRepresentation = bitset<32>(decimal);
+    } else {
+        // Positive number: directly convert to binary
+        binaryRepresentation = std::bitset<32>(decimal);
+    }
+
+    return binaryRepresentation.to_string();
+}
+string decimalToBinary16(int decimal) {
+    std::bitset<16> binaryRepresentation;
+
+    if (decimal < 0) {
+        // Calculate the two's complement
+        int positiveEquivalent = 65536 + decimal; // 2^12
+        binaryRepresentation = bitset<16>(decimal);
+    } else {
+        // Positive number: directly convert to binary
+        binaryRepresentation = std::bitset<16>(decimal);
+    }
+
+    return binaryRepresentation.to_string();
+}
+
+
+string decimalToBinary12(int decimal){
+    bitset<12> binaryRepresentation;
+    if(decimal <0){
+        // Calculate the two's complement
+        int positiveEquivalent = 4096 + decimal; // 2^12
+        binaryRepresentation = bitset<12>(decimal);
+    } 
+    else{
+        // Positive number: directly convert to binary
+        binaryRepresentation = bitset<12>(decimal);
+    }
+    return binaryRepresentation.to_string();
+}
 
 bool containsVirHalt(string& filename,regex& regexPattern) {
     // Input file stream for reading from the input file
@@ -111,6 +92,7 @@ bool containsVirHalt(string& filename,regex& regexPattern) {
         // Check if the line matches the specified regex pattern
         if(regex_search(line, regexPattern)){
             patternFound = true;
+            inputFile.close();
             break;  // Stop searching once the pattern is found
         }
     }
@@ -168,186 +150,389 @@ string r_assembler(string & line, unordered_map<string, string> & reg_map){
     return output_bi_code;
 }
 
-string u_assembler(string& line,unordered_map<string,string>& reg_map){
-    unordered_map<string,string> opcode_bi_rep;
-    opcode_bi_rep["lui"]="0110111";
-    opcode_bi_rep["auipc"]="0010111";
-    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s+([(-1048576)-1048575])");
+string j_assembler(string &line, unordered_map<string,string> &reg_map, int &program_counter,unordered_map <string , int> &label_map){
+    regex instruc1("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    regex instruc2("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match1;
+    smatch match2;
+    if(regex_match(line, match1, instruc1)){
+    string last_arg = match1[3];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match1[3]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab - pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //cout<<imm<<endl;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary32(imm);
+    }
+    else{
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+    }
+    //cout<< imm_bin_code<<endl;
+    string regs = reg_map[match1[2]];
+    string opcod = "1101111";
+    //cout<<imm_bin_code;
 
-    smatch match;
-    bool temp=regex_match(line,match,instructions);
-    string opcode_bi=opcode_bi_rep[match[1]];
-    string regd=reg_map[match[2]];
-    string imm=immme_map[match[3]];
-    string output_bicode=opcode_bi+regd+bin(imm);
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        if(imm >= -1048576 && imm<= 1048575){
+        string imm_bin_code;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+        //cout<<imm_bin_code<<endl;
+        //cout<<imm_bin_code<<endl;
+        string regs = reg_map[match1[2]];
+        string opcod = "1101111";
 
-    return output_bicode;
+        //cout<<imm_bin_code;
+    
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+        }
+        else{
+            cerr<<"Immediate out of range";
+            exit(1);
+        }
+
+    }
+    }
+    else if(regex_match(line, match2, instruc2)){
+    string last_arg = match2[3];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match2[3]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab - pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //cout<<imm<<endl;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary32(imm);
+    }
+    else{
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+    }
+    //cout<< imm_bin_code<<endl;
+    string regs = reg_map[match2[2]];
+    string opcod = "1101111";
+    //cout<<imm_bin_code;
+
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        if(imm >= 1048576 && imm <=1048575){
+        string imm_bin_code;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+        //cout<<imm_bin_code<<endl;
+        //cout<<imm_bin_code<<endl;
+        string regs = reg_map[match2[2]];
+        string opcod = "1101111";
+
+        //cout<<imm_bin_code;
+    
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+        }
+        else{
+            cerr<<"Immediate out of range";
+            exit(1);
+        }
+
+
+    }
+    }
 }
 
-string s_assembler(string& line, unordered_map<string,string> reg_map){
+string i_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    std::unordered_map<std::string, std::string> opcode_bi_rep;
+    opcode_bi_rep["lw"] = "0000011";
+    opcode_bi_rep["addi"] = "0010011";
+    opcode_bi_rep["sltiu"] = "0010011";
+    opcode_bi_rep["jalr"] = "1100111";
 
-    regex instRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*\\d+\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    unordered_map <string, string> funct3_bi_rep;
+    funct3_bi_rep["lw"] = "010";
+    funct3_bi_rep["addi"] = "000";
+    funct3_bi_rep["sltiu"] = "011";
+    funct3_bi_rep["jalr"] = "000";
+    
+    
+
+    regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match1;
+    smatch match2;
+    smatch match3;
+    if(regex_match(line, match1, instruc2)){
+
+        int imm = stoi(match1[4]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match1[1]];
+            string regd = reg_map[match1[2]];
+            string brac_reg = reg_map[match1[3]];
+            string fun3 = funct3_bi_rep[match1[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+
+            // Construct the output binary code
+            string output_bicode = immBinary + brac_reg+ fun3 + regd + opcode_bi;
+
+            return output_bicode;        
+    }
+    else if(regex_match(line, match2, instruc1)){
+        //int imm = stoi(match2[4]);
+        string imm_str = match2[3];
+        imm_str.erase(std::remove(imm_str.begin(), imm_str.end(), '('), imm_str.end());
+        imm_str.erase(std::remove(imm_str.begin(), imm_str.end(), ')'), imm_str.end());
+
+        int imm = stoi(imm_str);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match2[1]];
+            string regd = reg_map[match2[2]];
+            string regs = reg_map[match2[4]];
+            string fun3= funct3_bi_rep[match2[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+            // Construct the output binary code
+            string output_bicode = immBinary + regs + fun3 + regd + opcode_bi;
+
+            return output_bicode;
+    }
+    else if(regex_match(line, match3, instruc3)){
+        int imm = stoi(match3[4]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match3[1]];
+            string regd = reg_map[match3[2]];
+            string regs = reg_map[match3[3]];
+            string fun3= funct3_bi_rep[match3[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+    
+            // Construct the output binary code
+            string output_bicode = immBinary + regs + fun3 + regd + opcode_bi;
+
+            return output_bicode;
+    }
+}
+
+string b_assembler(string &line, unordered_map<string,string> &reg_map, int program_counter,unordered_map <string , int> label_map ){
+    unordered_map <string, string> opcode_bi_rep;
+
+    opcode_bi_rep["beq"] = "1100011";
+    opcode_bi_rep["bne"] = "1100011";
+    opcode_bi_rep["blt"] = "1100011";
+    opcode_bi_rep["bge"] = "1100011";
+    opcode_bi_rep["bltu"] = "1100011";
+
+    unordered_map <string, string> funct3;
+
+    funct3["beq"] = "000";
+    funct3["bne"] = "001";
+    funct3["blt"] = "100";
+    funct3["bge"] = "101";
+    funct3["bltu"] = "110";
+    funct3["bgeu"] = "111";
+
+    regex instruc("\\s*(beq|bne|blt|bge|bltu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+
+    smatch match;
+    regex_match(line, match, instruc);
+    string last_arg = match[4];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match[4]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab -pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary16(imm);
+    }
+    else{
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary16(imm);
+    }
+   
+    string regs1 = reg_map[match[2]];
+    string regs2 = reg_map[match[3]];
+    string opcod = opcode_bi_rep[match[1]];
+    string fu3 = funct3[match[1]];
+    //cout<<imm_bin_code;
+
+    char temp11 = imm_bin_code[4];
+    string imm11(1,temp11);
+    string imm41 = imm_bin_code.substr(11,4);
+    char temp12 = imm_bin_code[3];
+    string imm12(1,temp12);
+    string imm510 = imm_bin_code.substr(5,6);
+
+    string out = imm12 + imm510 + regs2 + regs1 + fu3 + imm41 + imm11 + opcod;
+    return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        string imm_bin_code;
+        cout<<imm;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary16(imm);
+        //cout<<imm_bin_code<<endl;
+        string regs1 = reg_map[match[2]];
+        string regs2 = reg_map[match[3]];
+        string opcod = opcode_bi_rep[match[1]];
+        string fu3 = funct3[match[1]];
+        cout<<imm_bin_code;
+    
+        char temp11 = imm_bin_code[4];
+        string imm11(1,temp11);
+        string imm41 = imm_bin_code.substr(11,4);
+        char temp12 = imm_bin_code[3];
+        string imm12(1,temp12);
+        string imm510 = imm_bin_code.substr(5,6);
+    
+        string out = imm12 + imm510 + regs2 + regs1 + fu3 + imm41 + imm11 + opcod;
+        return out;
+
+    }
+    //return out;
+}
+
+string u_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    std::unordered_map<std::string, std::string> opcode_bi_rep;
+    opcode_bi_rep["lui"] = "0110111";
+    opcode_bi_rep["auipc"] = "0010111";
+
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match;
+    if(regex_match(line, match, instructions)){
+        int imm = stoi(match[3]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match[1]];
+            string regd = reg_map[match[2]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary32(imm);
+            //cout<< immBinary<<endl;;
+            string final_im = immBinary.substr(0,20);
+            //cout<<final_im;
+
+            // Construct the output binary code
+            string output_bicode = final_im + regd + opcode_bi;
+
+            return output_bicode;        
+    }
+    
+}
+
+string s_assembler(string& line, unordered_map<string,string> &reg_map){
+
+    regex instRegex("\\s*(sw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+
     smatch match;
     bool tmp = regex_match(line, match,instRegex);
     string op_code = "0100011";
-    string imm_string = match[4] ;
+    string imm_string = match[3] ;
     int imm = stoi(imm_string);
+    //cout<<imm;
+
     string imm_bin_code;
-    if(imm >= 0 && imm<= 2047){
-        imm_bin_code = bitset<12>(imm).to_string();
-    }
-    else if(imm < 0 && imm>= -2048){
-    
-        int positiveEquivalent = 4096 + imm; // 2^12
-        imm_bin_code = bitset<12>(positiveEquivalent).to_string();
-    }
-    else{
-        cerr<<"Immediate value out of bound";
-        exit(1);
-    }
+    imm_bin_code = decimalToBinary12(imm);
+    //cout<< imm_bin_code<<endl;
     string fun3 = "010";
-    string regs2 = match[2];
-    string regs1 = match[6];
+    string regs2 = reg_map[match[2]];
+    string regs1 = reg_map[match[4]];
     string imm04 = imm_bin_code.substr(7,5);
     string imm511 = imm_bin_code.substr(0,7);
 
     string out = imm511 + regs2 + regs2 + fun3 + imm04 + op_code;
-    return out;
-
-}
-
-string j_assembler(string &line, unordered_map<string,string> &reg_map, int program_counter,unordered_map <string , int> label_map){
-    regex instruc("\\s*jal\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(.*)\\s*$");
-    smatch match;
-    bool x = regex_match(line, match, instruc);
-
-    int lab = label_map[match[4]];
-    int pc = program_counter;
-    
-    int imm = 4*(pc - lab) ;
-    string imm_bin_code;
-    if(imm >= 0 && imm<= 524287){
-        imm_bin_code = bitset<20>(imm).to_string();
-    }
-    else if(imm < 0 && imm>= -524288){
-    
-        int positiveEquivalent = 1048576 + imm; // 2^12
-        imm_bin_code = bitset<20>(positiveEquivalent).to_string();
-    }
-    else{
-        cerr<<"Immediate value out of bound";
-        exit(1);
-    }
-
-    string regd = reg_map[match[2]];
-    
-    string opcod = "1101111";
-    //string fu3 = funct3[match[1]];
-
-    char temp11 = imm_bin_code[9];
-    string imm11(1,temp11);
-    string imm1912 = imm_bin_code.substr(1,8);
-    char temp20 = imm_bin_code[0];
-    string imm20(1,temp20);
-    string imm101 = imm_bin_code.substr(10,10);
-
-    string out = imm20 + imm101 + imm11  + imm1912 + regd + opcod;
     return out;
+
 }
 
 
-string binary_converter_for_int(string value){
-    // takes a value b/w -2048 and +2047 and gives the binary representation , in 12 bits
-    string ans ;
-    int num = abs(stoi(value)) ;
-    for(int j = 0; j < 12; j++){
-        int rem = num % 2 ;
-        string s_rem = to_string(rem) ;
-        num = num / 2 ;
-        ans = s_rem + ans ;
-    }
-    if (value[0] == '-'){
-        ans = twoscomplement(ans) ;
-    }
-    return ans ;
-}
+bool is_binstruction(string& line, unordered_map<string,int> label_map){
 
-int idx_of_first_non_s_char(string s){
-    // returns the index of the first non-space char in string, and -1 if no such char is there
-    int l = s.length() ;
-    for(int i = 0; i < l; i++){
-        if (s[i] != ' '){
-            return i ;
+    regex instruc("\\s*(beq|bne|blt|bge|bltu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    smatch match;
+    if(regex_match(line,match,instruc)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+        string last_arg = match[4];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+            return true;
         }
-    }
-    return -1 ;
-}
-
-string i_assembler(string instruction, unordered_map<string, string> &register_map){
-    int l = instruction.length() ;
-
-    for(int i = 0; i < l; i++){
-        if (instruction[i] == '(' or instruction[i] == ')' or instruction[i] == ','){
-            //cout << i << " " ;
-            instruction[i] = ' ' ; // remove any parentheses or comma occuring, the instruction is now only space separated.
-        } 
-    }
     
-    int idx_o_f_n_s_c_in_instruction = idx_of_first_non_s_char(instruction) ;
-    string cpy_ins = instruction.substr(idx_o_f_n_s_c_in_instruction, l - idx_o_f_n_s_c_in_instruction) ;
-
-    string assmbly[4] ;
-    int counter = 0 ;
-
-    while (counter < 4){
-        int cpy_l = cpy_ins.length() ;
-        string token ;
-        int i = 0 ;
-        while (cpy_ins[i] != ' ' and i < cpy_l){
-            token = token + cpy_ins[i] ; 
-            i++ ;
-        }
-        assmbly[counter] = token ;
-        if (counter != 3){ // don't do any operation on the last token.
-        cpy_ins = cpy_ins.substr(i, cpy_l - i) ; // now, length of cpy_ins is cpy_l - i
-
-        int idx_o_f_n_s_c_in_cpy_ins = idx_of_first_non_s_char(cpy_ins) ;
-
-        cpy_ins = cpy_ins.substr(idx_o_f_n_s_c_in_cpy_ins, (cpy_l - i) - idx_o_f_n_s_c_in_cpy_ins) ;
-        }
-        counter++ ;
-
     }
-
-    // Now, we'll generate the output in binary. It's form: imm(31:20), rs1(19:15), funct3(14:12), rd(11:7), opcode(6:0)
-
-    string op_code = assmbly[0] ;
-    string rd = assmbly[1] ;
-    string rs = assmbly[2] ;
-    string imm = assmbly[3] ;
-
-    if (op_code == "lw"){
-        rd = assmbly[1] ; 
-        imm = assmbly[2] ; 
-        rs = assmbly[3] ; 
-    }
-
-    unordered_map<string, string> opcode_binary ;
-    opcode_binary["lw"] = "0000011" ; opcode_binary["addi"] = "0010011" ; opcode_binary["sltiu"] = "0010011" ; 
-    opcode_binary["jalr"] = "1100111" ;  
-
-    unordered_map<string, string> opcode_func3 ;
-    opcode_func3["lw"] = "010" ; opcode_func3["addi"] = "000" ; opcode_func3["sltiu"] = "011" ; opcode_func3["jalr"] = "000" ; 
-
-    string binary_representation ;
-    binary_representation = binary_converter_for_int(imm) + register_map[rs] + opcode_func3[op_code] + register_map[rd] + opcode_binary[op_code] ;
-    
-    return binary_representation ;
-
-
+    return false;
+   
 }
-
-
 
 bool is_rinstruction(string& line){
     string low_line = line;
@@ -377,18 +562,172 @@ bool is_iinstruction(string &line){
     smatch match3;
 
     if(regex_match(line, match1, instruc1)){
+        int first1 = stoi(match1[3]);
         //cout<<"lw";
-        return true ;
+        if(first1 <= 2047 && first1 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
     }    
     else if(regex_match(line, match2, instruc2)){
+        int first2 = stoi(match2[4]);
         //cout<<"addi";
-        return true;
+        if(first2 <= 2047 && first2 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
     }
     else if(regex_match(line, match3, instruc3)){
+        int first3 = stoi(match3[4]);
         //cout<<"jalr";
+        if(first3 <= 2047 && first3 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
+    }
+
+    cout<<"here";
+    return false;
+}
+bool is_sinstruction(string& line){
+    string low_line = line;
+    //transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
+
+    //  S-type instruction format
+    regex instRegex("\\s*sw\\s+(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match;
+    int first1 = stoi(match[3]);
+    if(regex_match(low_line, match,instRegex)){
+        if(first1>=-2048 && first1  <= 2047){
+            return true;
+        }
+        cout<<"Immediate out of range";
+        exit(1);
+
+    }
+    else{
+        return false;
+    }
+
+}
+bool is_uinstruction(string &line){
+    string low_line = line;
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    smatch match;
+    // /bool a = regex_search(low_line, instructions);
+    // /regex_match(low_line,match,instructions);
+    //cout<<match[3];
+    // /cout<<a;
+
+    if(regex_match(low_line,match,instructions)){     
+        int imm = stoi(match[3]);
+          // Convert matched string to integer
+        if(imm >= -2147483648 && imm <= 2147483647){
+            return true;
+        } 
+        else{
+            cout<<"Immediate out of range";
+        exit(1);
+        }
+    }
+    return false;
+}
+
+bool is_jinstruction(string &line, unordered_map<string,int> label_map){
+    regex instruc2("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match2;
+    regex instruc1("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    smatch match1;
+    cout<<"atl";
+    if(regex_match(line,match1,instruc1)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+        cout<<"here two";
+        string last_arg = match1[3];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+            return true;
+        }
+        cout<<"ff:";
+        return false;
+    
+    }
+    else if(regex_match(line,match2,instruc2)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+        cout<<"here two";
+        string last_arg = match2[3];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+            return true;
+        }
+        cout<<"ff:";
+        return false;
+
+    }
+    cout<<"what";
+    return false;
+
+}
+
+bool is_label(string& line){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+
+    if(regex_search(line, pattern)){
+
         return true;
     }
-    return false ;
+    return false;
+}
+////change
+string label_instruc_extrac(string &line , unordered_map <string , int> &label_map){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+    smatch match;
+    string out;
+    
+    regex_match(line, match, pattern);
+
+    
+        out = match[2];
+        //cout<<out;
+        
+        return out;
+}
+////change
+string label_name_extrac(string &line , unordered_map <string , int> &label_map){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+    smatch match;
+    string out;
+    
+    if( regex_match(line, match ,pattern)){
+        out = match[1];
+        //cout<<out;
+
+        return out;
+    }
+
+}
+
+string halt_assembler(string& line ){
+    string bin_code = "00000000000000000000000001100011";
+    return bin_code;
+
+}
+bool is_haltinstruc(string&line, unordered_map<string,string> &reg_map){
+    regex hal("\\s*beq\\s+zero\\s*,\\s*zero\\s*,\\s*0\\s*");
+    smatch match;
+    if(regex_match(line,match, hal)){
+        return true;
+    }
 }
 
 /* Below, in comments, is the function to check if it's an i instruction, along with range checking. */
@@ -452,75 +791,98 @@ bool is_iinstruction(string &line){
 //     return ans ;
 // }
 
-bool is_sinstruction(string& line){
-    string low_line = line;
-    transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
 
-    //  S-type instruction format
-    regex instRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*\\d+\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
-
-    smatch match;
-
-    regex swRegex("\\s*sw\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d{1,4})\\(\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
-    
-
-    if(regex_match(low_line, match, instRegex)){
-        if(regex_match(low_line, match,swRegex )){
-            return true;
-        }
-        else{
-            cout<< "Invalid Immediate";
-            exit(0);
-        }
-    }
-    else {
-        return false;
-    }
-}
-
-bool is_uinstructions(string& line){
-    string low_line=line;
-    transform(low_line.begin(),low_line.end(),low_line.begin(),::tolower);
-    
-    // U-type instruction format //
-    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s+([(-1048576)-1048575])")
-    smatch match;
-    
-    if(regex_match(low_line,match,instructions)){
-        return true;
-    }
-    else return false;
-}
-
-bool is_jinstruction(string &line, unordered_map<string,int> label_map){
-    regex instruc("\\s*jal\\s+(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(.*)\\s*$");
-    smatch match;
-    if(regex_match(line, match, instruc)){
-        auto it = label_map.find(match[6]);
-        if(it!=label_map.end()){
-            return true;
-        }
-    }
-    return false;
-
-}
-
-string classifier(string &line, unordered_map<string,string> &reg_map){
-
-    if(is_rinstruction(line)){
-        return r_assembler(line , reg_map);
-    }
-    if(is_sinstruction(line)){
-        return s_assembler(line , reg_map);
+string classifier(string &line, unordered_map<string,string> &reg_map,int &program_counter,unordered_map<string,int> &label_map){
+    //cout<<is_label(line);
+    if(is_label(line)){
+        string extra = label_instruc_extrac(line, label_map);
+        cout<<"here"<<endl;
+        program_counter+=1;
+        //cout<<"classifier label";
+        cout<<extra;
+        return classifier(extra, reg_map, program_counter, label_map);
+        
     }
     else{
-        cout<< "invalid syntax";
-        return "stop";
+
+        if(is_rinstruction(line)){
+            program_counter+=1;
+            //cout<<"is r type instruc \n";
+            string fina=r_assembler(line, reg_map);
+            //cout<<fina<<endl;
+            return fina;
+        }
+        else if(is_haltinstruc(line,reg_map)){
+            program_counter+=1;
+            return halt_assembler(line);
+        }
+    
+        else if(is_binstruction(line, label_map)){
+            program_counter+=1;
+            return b_assembler(line,reg_map,program_counter,label_map);
+        }
+        else if(is_uinstruction(line)){
+            program_counter+=1;
+            return u_assembler(line,reg_map);
+        }
+        else if(is_iinstruction(line)){
+            program_counter+=1;
+            return i_assembler(line,reg_map);
+        }
+        else if(is_sinstruction(line)){
+            program_counter+=1;
+            return s_assembler(line,reg_map);
+        }
+        else if(is_jinstruction(line,label_map)){
+            program_counter+=1;
+            return j_assembler(line,reg_map,program_counter,label_map);
+        }
+     
+        else{
+        //cout<< "invalid syntax";
+        //cout << "is not r type instruc \n";
+        //program_counter+=1;
+        cerr<<"Invalid Syntax at line "<<program_counter;
+        exit(1);
+        return "Invalid Syntax";
+    }
     }
 
 }
+bool adress_label(string &line, unordered_map<string,string> &reg_map,int &program_counter1,  unordered_map <string , int> &label_map){
+    if(is_label(line)){
+        //cout<<"is label"<<endl;
+        string extrac = label_instruc_extrac(line, label_map);
+        string label_name = label_name_extrac(line, label_map);
+        cout<<label_name<<endl;
+        cout<<extrac;
+        program_counter1+=1;
+        label_map[label_name] = program_counter1;
+
+            //cout<<"adrees label";
+            //cout<<"Invalid Syntax at line "<<program_counter1 + 1;
+            //exit(1);
+        return true;
+            
+    }
+    else{
+        
+        //else{
+        //    program_counter1+=1;
+        //    cerr<<"Invalid Syntax at line "<<program_counter1+1;
+        //    exit(1);
+        //}
+        program_counter1+=1;
+        return false;
+
+    }
+}
+
 
 int main(){
+
+    int program_counter1 = -1;
+    int program_counter = -1;
 
     unordered_map<string, string> register_map;
 
@@ -560,54 +922,73 @@ int main(){
 
     regex Vir_halt("\\s*beq\\s+(zero)\\s*,\\s*(zero)\\s*,\\s*(0x00000000)\\s*");
     string Ifilename= "inp.txt"
+    string line1;
+    ifstream input_file("inp.txt");
     //a map that store line string as key and hexadecimal adress as value
 
-    if(inputFile.is_open()){
-        while(getline(inputFile, line1)){
-            if(!line1.empty()){
-                    if(classifier(line1, register_map) != "stop"){
-                    std::stringstream ss;
-                    ss << std::setfill('0') << std::setw(8) << std::hex << address;
-                    lineAddressMap[line1] = ss.str();
-                    address += 0x00000001;
-                }
+    unordered_map<string,int> label_map;
+    while(getline(input_file, line1)){
+        if(!line1.empty()){
+            if(adress_label(line1, register_map, program_counter1, label_map)){
+                int a = 2;
+            }
+            else{
+                continue;
             }
         }
-        inputFile.close();
-    } else {
-        std::cout << "Unable to open file";
+
+        
+    }
+    //label_map["start"] = 2;
+    input_file.close();
+    for (const auto& pair : label_map) {
+        cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
     }
     
-    ifstream input_file(Ifilename);
-    ofstream output_file("");
+   
+    ifstream inputfile("inp.txt");
+    ofstream output_file("out.txt");
+
+
     string line;
 
     if(!containsVirHalt(Ifilename, Vir_halt)){
-        cout << "missing halt instruction in input file"; 
+        cerr << "Missing halt instruction in input file"; 
+        exit(1);
     }
     else{
-        if(!input_file.is_open()){
+        
+        if(inputfile.is_open()){
             if(checkLastLine(Ifilename, Vir_halt)){
-                while(getline(input_file, line)){
+                while(getline(inputfile, line)){
                     if(!line.empty()){
-                        if(classifier(line, register_map) != "stop"){
-
+                        string result = classifier(line, register_map, program_counter,label_map);
+                        if(result != "Invalid Syntax"){
+                           output_file<<result<<endl;; 
                         }
                         else{
-                            exit(0);
+                            program_counter++;
+                            cerr<< result<<" at line "<<program_counter;
+                            exit(1);
+
                         }
+    
                     }
                 }
+                output_file.close();
             }
             else{
-                cout<< "No Virtual Halt at end of input instructions";
+                cerr<< "No Virtual Halt at end of input instructions";
+                exit(1);
             }
+    
         }
         else{
-            cout<< "error in opening file";
+            cerr<< "error in opening file";
+            exit(1);
         }
     }
-    
+    inputfile.close();
 
     return 0;
 }
