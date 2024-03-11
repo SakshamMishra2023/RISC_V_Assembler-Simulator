@@ -428,7 +428,6 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     else if(is_number(last_arg)){
         int imm =stoi(last_arg);
         string imm_bin_code;
-        cout<<imm;
     
     
         //int positiveEquivalent = 4096 + imm; // 2^12
@@ -438,7 +437,6 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
         string regs2 = reg_map[match[3]];
         string opcod = opcode_bi_rep[match[1]];
         string fu3 = funct3[match[1]];
-        cout<<imm_bin_code;
     
         char temp11 = imm_bin_code[4];
         string imm11(1,temp11);
