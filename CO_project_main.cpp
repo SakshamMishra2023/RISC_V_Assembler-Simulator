@@ -206,6 +206,7 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
     //out<<imm;
     string imm_bin_code;
     if(imm >= 0){
+        
          imm_bin_code = decimalToBinary32(imm);
     }
     else{
@@ -274,6 +275,7 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
     //out<<imm;
     string imm_bin_code;
     if(imm >= 0){
+        
          imm_bin_code = decimalToBinary32(imm);
     }
     else{
@@ -322,6 +324,7 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
         return out;
         }
         else{
+            
             cerr<<"Immediate out of range";
             exit(1);
         }
@@ -371,6 +374,7 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
 
             return output_bicode;        
     }
+        
     else if(regex_match(line, match2, instruc1)){
         //int imm = stoi(match2[4]);
         string imm_str = match2[3];
@@ -392,6 +396,7 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
 
             return output_bicode;
     }
+        
     else if(regex_match(line, match3, instruc3)){
         int imm = stoi(match3[4]);
         //cout<<imm<<endl;
