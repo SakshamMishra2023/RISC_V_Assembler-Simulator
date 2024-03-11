@@ -131,7 +131,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     int lab = label_map[match[4]];
     int pc = program_counter;
     //cout<<pc<<" "<<lab;
-    int sub = lab -pc;
+    int sub = pc -lab;
     //cout<<sub;
     int imm = 4*sub ;
     //out<<imm;
