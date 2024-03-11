@@ -366,16 +366,30 @@ bool is_rinstruction(string& line){
     }
 }
 
-bool is_i_instruction(string instruction){
-    // returns true if the sent instruction is of an i type. False if not (If the input instruction is an error, it  returns false)
-    // Guys, it seems I am having some issues in this. It sometimes gives incorrect answers. Thanks, Siddharth.
-    regex instruction_pattern("\\s*(addi|lw|jalr|sltiu)\\s+(zero|ra|[sgtf]p|t[0-6]|s[0-11]|a[0-7])\\s*,\\s*(zero|ra|[sgtf]p|t[0-6]|s[0-11]|a[0-7])\\s*,\\s*[(-2048)-2047]") ;
-    if (regex_match(instruction, instruction_pattern)){
+bool is_iinstruction(string &line){
+    
+    regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match1;
+    smatch match2;
+    smatch match3;
+
+    if(regex_match(line, match1, instruc1)){
+        //cout<<"lw";
         return true ;
     }    
+    else if(regex_match(line, match2, instruc2)){
+        //cout<<"addi";
+        return true;
+    }
+    else if(regex_match(line, match3, instruc3)){
+        //cout<<"jalr";
+        return true;
+    }
     return false ;
-}  
-
+}
 
 bool is_sinstruction(string& line){
     string low_line = line;
