@@ -709,10 +709,6 @@ string classifier(string &line, unordered_map<string,string> &reg_map,int &progr
 
     if(is_label(line)){
         string extra = label_instruc_extrac(line, label_map);
-        cout<<"here"<<endl;
-        program_counter+=1;
-    
-        cout<<extra;
         return classifier(extra, reg_map, program_counter, label_map);
         
     }
@@ -753,7 +749,7 @@ string classifier(string &line, unordered_map<string,string> &reg_map,int &progr
      
         else{
 
-        cerr<<"Invalid Syntax at line "<<program_counter + 1;
+        cerr<<"Invalid Syntax at line "<<program_counter + 2;
         exit(1);
         return "Invalid Syntax";
     }
