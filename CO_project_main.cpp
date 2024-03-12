@@ -121,7 +121,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     funct3["bltu"] = "110";
     funct3["bgeu"] = "111";
 
-    regex instruc("\\s*(beq|bne|blt|bge|bltu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    regex instruc("\\s*(beq|bne|blt|bge|bltu|bgeu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
 
     smatch match;
     regex_match(line, match, instruc);
