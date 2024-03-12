@@ -111,6 +111,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     opcode_bi_rep["blt"] = "1100011";
     opcode_bi_rep["bge"] = "1100011";
     opcode_bi_rep["bltu"] = "1100011";
+    opcode_bi_rep["bgeu"] = "1100011";
 
     unordered_map <string, string> funct3;
 
@@ -131,7 +132,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     int lab = label_map[match[4]];
     int pc = program_counter;
     //cout<<pc<<" "<<lab;
-    int sub = pc -lab;
+    int sub = lab -pc;
     //cout<<sub;
     int imm = 4*sub ;
     //out<<imm;
@@ -565,7 +566,7 @@ bool is_iinstruction(string &line){
 
 bool is_binstruction(string& line, unordered_map<string,int> label_map){
 
-    regex instruc("\\s*(beq|bne|blt|bge|bltu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    regex instruc("\\s*(beq|bne|blt|bge|bltu|bgeu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
     smatch match;
     if(regex_match(line,match,instruc)){
         //if(keyExists(label_map,match[4] )){
