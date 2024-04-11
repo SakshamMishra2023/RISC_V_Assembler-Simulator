@@ -12,12 +12,13 @@ int BinaryToInteger(string binary, int len){
         bit = number % 10 ;
         value = bit * power ;
         ans = ans + value ;
-        
+        // preparing for next iteration
         power = 2 * power ;
         number = number / 10 ;
     }
     
     if(binary[0] == '1'){
+        // negative number
         // power == pow(2, len) ;
         ans = power - ans ;
         ans = - ans ;
