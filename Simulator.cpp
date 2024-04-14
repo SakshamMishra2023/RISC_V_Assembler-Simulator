@@ -35,7 +35,7 @@ string Substring(string input, int start_idx, int len){
     int curr_idx = start_idx ;
     while(curr_idx <= end_idx){
         ans = ans + input[curr_idx] ;
-        curr_idx++ ;
+        curr_idx++;
     }
     return ans ;
 }
@@ -114,10 +114,4 @@ string is_I_type(string instruction){
 } 
 
 
-int main(){
-    string b; int l ;
-    cout << "What's the binary? " ; cin >> b ;
-    cout << "What's it's length? " ; cin >> l ;  
-    cout << "\nIt's value is: " << BinaryToInteger(b, l) ;
-    return 0 ; 
-}
+
