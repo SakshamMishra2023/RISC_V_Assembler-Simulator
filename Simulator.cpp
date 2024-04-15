@@ -389,7 +389,20 @@ string is_S_type(string instruction){
     }
     return "false";
 }
+
+void S_Type_Executer(string instruction, string register_array[]) {
+    // Given an S type string, this executes it, i.e. does the needed changes in PC and File registers.
+
+    string imm4_0_binary = Substring(instruction, 0, 5); 
+    string rs2_bin = Substring(instruction, 7, 5); 
+    string rs1_bin = Substring(instruction, 12, 5); 
+    string imm11_5_binary = Substring(instruction, 25, 7); 
+
+    int imm4_0_val = BinaryToInteger(imm4_0_binary, 5); // Convert imm[4:0] to integer
+    int rs2 = BinaryToInteger(rs2_bin, 5); // Convert rs2 to integer
+    int rs1 = BinaryToInteger(rs1_bin, 5); // Convert rs1 to integer
+    int imm11_5_val = BinaryToInteger(imm11_5_binary, 7); // Convert imm[11:5] to integer
+
+    int imm_val = (imm11_5_val << 5) | imm4_0_val; // Combine imm[11:5] and imm[4:0] to form the final immediate value
+
 */
-
-
-
