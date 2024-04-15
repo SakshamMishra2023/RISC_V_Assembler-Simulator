@@ -1,6 +1,11 @@
 #include <iostream>
+#include <map>
+#include <fstream>
+#include <string>
 #include <cmath>
-using namespace std ;
+#include <sstream>
+
+using namespace std;
 
 int BinaryToInteger(string binary, int len){
     // given a string of bits and it's length, it returns it's integer value, assuming 2's complement system
@@ -109,6 +114,204 @@ string is_I_type(string instruction){
     }
     return "false" ; // the instruction is not I-Type at all.
 } 
+#include <iostream>
+#include <map>
+#include <fstream>
+#include <string>
+#include <cmath>
+#include <sstream>
 
+using namespace std;
+
+int BinaryToInteger(string binary, int len){
+    // given a string of bits and it's length, it returns it's integer value, assuming 2's complement system
+    int power = 1; int ans = 0 ;
+    int bit , value ;
+    
+    int number = stoi(binary) ;
+    for(int i = 0; i < len; i++){
+        bit = number % 10 ;
+        value = bit * power ;
+        ans = ans + value ;
+        // preparing for next iteration
+        power = 2 * power ;
+        number = number / 10 ;
+    }
+    
+    if(binary[0] == '1'){
+        // negative number
+        // power == pow(2, len) ;
+        ans = power - ans ;
+        ans = - ans ;
+    }
+    
+    return ans ;
+}
+
+void b_simu(string &bcode, map<string, int> register_map,map<int, string> register_add_map, int &pc){
+
+    if(bcode.substr(17,3) == "000"){
+        if( register_map [bcode.substr(8,5)] == register_map[bcode.substr(13,5)]){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        }
+        if(){
+
+        }
+
+    }
+
+    
+
+
+}
+
+
+
+
+void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
+    string opcode;
+    opcode = bcode.substr(26,6);
+    if(opcode == "0110011"){
+        r_simu(bcode,register_map,register_add_map,pc );
+    }
+    else if(opcode == "0000011" || opcode == "0010011" || opcode == "1100111"){
+        i_simu(bcode,register_map,register_add_map,pc );
+
+    }
+    else if(opcode == "0100011"){
+        s_simu(bcode, register_map, register_add_map,pc );
+
+    }
+    else if(opcode == "1100011"){
+        b_simu(bcode, register_map, register_add_map, pc );
+
+    }
+    else if(opcode == "0110111" || opcode == "0010111"){
+        u_simu(bcode, register_map, register_add_map, pc );
+
+    }
+
+    else if(opcode == "1101111"){
+        j_simu(bcode, register_map, register_add_map, pc );
+    }
+
+    else if(opcode == ""){
+
+    }
+
+
+
+}
+
+
+
+
+
+int main(){
+
+    map<string, int> register_map;
+
+    register_map["zero"] = 0;
+    register_map["ra"] = 0;
+    register_map["sp"] = 0;
+    register_map["gp"] = 0;
+    register_map["tp"] = 0;
+    register_map["t0"] = 0;
+    register_map["t1"] = 0;
+    register_map["t2"] = 0;
+    register_map["s0"] = 0;
+    register_map["fp"] = 0;
+    register_map["s1"] = 0;
+    register_map["a0"] = 0;
+    register_map["a1"] = 0;
+    register_map["a2"] = 0;
+    register_map["a3"] = 0;
+    register_map["a4"] = 0;
+    register_map["a5"] = 0;
+    register_map["a6"] = 0;
+    register_map["a7"] = 0;
+    register_map["s2"] = 0;
+    register_map["s3"] = 0;
+    register_map["s4"] = 0;
+    register_map["s5"] = 0;
+    register_map["s6"] = 0;
+    register_map["s7"] = 0;
+    register_map["s8"] = 0;
+    register_map["s9"] = 0;
+    register_map["s10"] =0;
+    register_map["s11"] = 0;
+    register_map["t3"] = 0;
+    register_map["t4"] = 0;
+    register_map["t5"] = 0;
+    register_map["t6"] = 0;
+
+    map<int, string> register_add_map;
+
+    register_add_map[0] = "zero";
+    register_add_map[1] = "ra";
+    register_add_map[2] = "sp";
+    register_add_map[3] = "gp";
+    register_add_map[4] = "tp";
+    register_add_map[5] = "t0";
+    register_add_map[6] = "t1";
+    register_add_map[7] = "t2";
+    register_add_map[8] = "s0";
+    register_add_map[8] = "fp";
+    register_add_map[9] = "s1";
+    register_add_map[10] ="a0";
+    register_add_map[11] ="a1";
+    register_add_map[12] ="a2";
+    register_add_map[13] ="a3";
+    register_add_map[14] ="a4";
+    register_add_map[15] ="a5";
+    register_add_map[16] ="a6";
+    register_add_map[17] ="a7";
+    register_add_map[18] ="s2";
+    register_add_map[19] ="s3";
+    register_add_map[20] ="s4";
+    register_add_map[21] ="s5";
+    register_add_map[22] ="s6";
+    register_add_map[23] ="s7";
+    register_add_map[24] ="s8";
+    register_add_map[25] ="s9";
+    register_add_map[26] ="s10";
+    register_add_map[27] = "s11";
+    register_add_map[28] = "t3";
+    register_add_map[29] = "t4";
+    register_add_map[30] = "t5";
+    register_add_map[31] = "t6";
+
+    map<string, int> program_mem;
+    program
+
+    
+
+int pc;
+map <int, string> instruction;
+int total = -1;
+
+ifstream input_file("inp.txt");
+ofstream output_file("out.txt");
+
+string line;
+
+while(getline(input_file, line)){
+    if(!line.empty() || !(line == "00000000000000000000000001100011")){
+        total++;
+        instruction[total] = line;
+    
+    }
+
+}
+
+while(pc <= total){
+    classifier(instruction[pc], register_map, register_add_map, pc);
+
+}
+
+    return 0;
+}
 
 
