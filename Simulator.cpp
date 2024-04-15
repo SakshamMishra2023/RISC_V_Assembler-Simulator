@@ -283,8 +283,40 @@ int main(){
     register_add_map[30] = "t5";
     register_add_map[31] = "t6";
 
-    map<string, int> program_mem;
-    program
+        map<string, int> program_mem;
+    
+    program_mem["0x00010000"] = 0;
+    program_mem["0x00010004"] = 0;
+    program_mem["0x00010008"] = 0;
+    program_mem["0x0001000c"] = 0;
+    program_mem["0x00010010"] = 0;
+    program_mem["0x00010014"] = 0;
+    program_mem["0x00010018"] = 0;
+    program_mem["0x0001001c"] = 0;
+    program_mem["0x00010020"] = 0;
+    program_mem["0x00010024"] = 0;
+    program_mem["0x00010028"] = 0;
+    program_mem["0x0001002c"] = 0;
+    program_mem["0x00010030"] = 0;
+    program_mem["0x00010034"] = 0;
+    program_mem["0x00010038"] = 0;
+    program_mem["0x0001003c"] = 0;
+    program_mem["0x00010040"] = 0;
+    program_mem["0x00010044"] = 0;
+    program_mem["0x00010048"] = 0;
+    program_mem["0x0001004c"] = 0;
+    program_mem["0x00010050"] = 0;
+    program_mem["0x00010054"] = 0;
+    program_mem["0x00010058"] = 0;
+    program_mem["0x0001005c"] = 0;
+    program_mem["0x00010060"] = 0;
+    program_mem["0x00010064"] = 0;
+    program_mem["0x00010068"] = 0;
+    program_mem["0x0001006c"] = 0;
+    program_mem["0x00010070"] = 0;
+    program_mem["0x00010074"] = 0;
+    program_mem["0x00010078"] = 0;
+    program_mem["0x0001007c"] = 0;
 
     
 
