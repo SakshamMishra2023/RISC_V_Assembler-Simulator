@@ -378,7 +378,7 @@ while(pc <= total){
 }
 
 
-/*
+// 
 string is_S_type(string instruction){
     /* Given the input string, returns if it is S-Type instruction or not */
     string opcode= substring(instruction,25,7);
@@ -390,9 +390,21 @@ string is_S_type(string instruction){
     return "false";
 }
 
-void S_Type_Executer(string instruction, string register_array[]) {
-    // Given an S type string, this executes it, i.e. does the needed changes in PC and File registers.
+string is_U_type(string instruction){
+    /* Given the input string, returns what kind of U-Type instruction it is or "false" if not a U-Type */
+    string opcode = substring(instruction,25,7);
 
+    if(opcode == "0110111"){
+        return "lui";
+    } 
+    else if (opcode == "0010111"){
+        return "auipc";
+    }
+    return "false"; 
+}
+
+void S_Type_Executer(string instruction, string register_array[]){
+    // Given an S type string, this executes it, i.e. does the needed changes in PC and File registers.
     string imm4_0_binary = Substring(instruction, 0, 5); 
     string rs2_bin = Substring(instruction, 7, 5); 
     string rs1_bin = Substring(instruction, 12, 5); 
@@ -404,5 +416,4 @@ void S_Type_Executer(string instruction, string register_array[]) {
     int imm11_5_val = BinaryToInteger(imm11_5_binary, 7); // Convert imm[11:5] to integer
 
     int imm_val = (imm11_5_val << 5) | imm4_0_val; // Combine imm[11:5] and imm[4:0] to form the final immediate value
-
-*/
+// 
