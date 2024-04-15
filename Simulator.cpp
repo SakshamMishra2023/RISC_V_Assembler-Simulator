@@ -61,9 +61,6 @@ void I_Type_Executer(string instruction, string register_array[]){
     string imm_binary = Substring(instruction, 0, 12) ; // bits of the immediate
     int imm_val = BinaryToInteger(imm_binary, 12) ; // integer value of immediate
 
-    // string opcode = Substring(instruction, 25, 7) ;
-    // string func3 = Substring(instruction, 17, 3) ;
-
     string rs_bin = Substring(instruction, 12, 5) ; // binary representation of rs1
     int rs = BinaryToInteger(rs_bin, 5) ; /* this is the corresponding number of the 
     register in the file registers. */
