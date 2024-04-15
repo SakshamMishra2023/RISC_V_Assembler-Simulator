@@ -378,3 +378,18 @@ while(pc <= total){
 }
 
 
+/*
+string is_S_type(string instruction){
+    /* Given the input string, returns if it is S-Type instruction or not */
+    string opcode= substring(instruction,25,7);
+    string fucn3= substring(instruction,17,3);
+
+    if(opcode == "0100011" && fucn3 == "010"){
+        return "sw";
+    }
+    return "false";
+}
+*/
+
+
+
