@@ -32,7 +32,6 @@ int BinaryToInteger(string binary, int len){
     return ans ;
 }
 
-
 string Substring(string input, int start_idx, int len){
     // Returns a substring of input string starting from start_idx and has length len
     string ans = "" ;
@@ -45,19 +44,104 @@ string Substring(string input, int start_idx, int len){
     return ans ;
 }
 
-string decimalToBinary32(int decimal) {
-    std::bitset<32> binaryRepresentation;
 
-    if (decimal < 0) {
-        // Calculate the two's complement
-        int positiveEquivalent = 4294967296 + decimal; // 2^12
-        binaryRepresentation = bitset<32>(decimal);
-    } else {
-        // Positive number: directly convert to binary
-        binaryRepresentation = std::bitset<32>(decimal);
+void b_simu(string &bcode, map<string, int> register_map,map<int, string> register_add_map, int &pc){
+    //beq
+    if(bcode.substr(17,3) == "000"){
+        if(register_map [bcode.substr(8,5)] == register_map[bcode.substr(13,5)]){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
+
     }
+    //bne
+    else if(bcode.substr(17,3) == "001"){
+        if(register_map [bcode.substr(8,5)] != register_map[bcode.substr(13,5)]){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
 
-    return binaryRepresentation.to_string();
+    }
+    //blt
+    else if(bcode.substr(17,3) == "100"){
+        if(register_map [bcode.substr(8,5)] <= register_map[bcode.substr(13,5)]){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
+
+    }
+    //bge
+    else if(bcode.substr(17,3) == "101"){
+        int imm;
+        int reg2 = register_map[bcode.substr(8,5)];
+        int reg1 = register_map[bcode.substr(13,5)];
+        if(reg1 < 0){
+            reg1 =  4294967296- reg1;
+        }
+        if(reg2 < 0){
+            reg2 = 4294967296- reg2;
+        }
+
+        if(reg1 >= reg2){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        if(binary_imm[0] == '1'){
+            binary_imm[0] = '0';
+            imm = BinaryToInteger(binary_imm,32);
+            imm = 0 - imm;
+
+        }
+        else{
+            imm = BinaryToInteger(binary_imm, 32);
+
+        }
+        imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
+
+    }
+    //bltu
+    else if(bcode.substr(17,3) == "110"){
+        if(register_map [bcode.substr(8,5)] > register_map[bcode.substr(13,5)]){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
+
+    }
+    //bgeu
+    else if(bcode.substr(17,3) == "111"){
+        int imm;
+        int reg2 = register_map[bcode.substr(8,5)];
+        int reg1 = register_map[bcode.substr(13,5)];
+        if(reg1 < 0){
+            reg1 =  4294967296- reg1;
+        }
+        if(reg2 < 0){
+            reg2 = 4294967296- reg2;
+        }
+
+        if(reg1 < reg2){
+        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
+        int imm = BinaryToInteger(binary_imm, 32);
+        pc = pc + imm;
+        return;
+        }
+        return;
+
+    }
 }
 
 void I_Type_Executer(string instruction, string register_array[]){
@@ -114,60 +198,6 @@ string is_I_type(string instruction){
     }
     return "false" ; // the instruction is not I-Type at all.
 } 
-#include <iostream>
-#include <map>
-#include <fstream>
-#include <string>
-#include <cmath>
-#include <sstream>
-
-using namespace std;
-
-int BinaryToInteger(string binary, int len){
-    // given a string of bits and it's length, it returns it's integer value, assuming 2's complement system
-    int power = 1; int ans = 0 ;
-    int bit , value ;
-    
-    int number = stoi(binary) ;
-    for(int i = 0; i < len; i++){
-        bit = number % 10 ;
-        value = bit * power ;
-        ans = ans + value ;
-        // preparing for next iteration
-        power = 2 * power ;
-        number = number / 10 ;
-    }
-    
-    if(binary[0] == '1'){
-        // negative number
-        // power == pow(2, len) ;
-        ans = power - ans ;
-        ans = - ans ;
-    }
-    
-    return ans ;
-}
-
-void b_simu(string &bcode, map<string, int> register_map,map<int, string> register_add_map, int &pc){
-
-    if(bcode.substr(17,3) == "000"){
-        if( register_map [bcode.substr(8,5)] == register_map[bcode.substr(13,5)]){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(25,1)  + bcode.substr(1,6) + bcode.substr(22, 4);
-        int imm = BinaryToInteger(binary_imm, 32);
-        pc = pc + imm;
-        }
-        if(){
-
-        }
-
-    }
-
-    
-
-
-}
-
-
 
 
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
@@ -340,6 +370,7 @@ while(getline(input_file, line)){
 
 while(pc <= total){
     classifier(instruction[pc], register_map, register_add_map, pc);
+    pc = pc + 1;
 
 }
 
