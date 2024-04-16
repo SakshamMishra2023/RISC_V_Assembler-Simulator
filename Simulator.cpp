@@ -205,13 +205,13 @@ string is_R_type(string instruction){
     string func7=substring(instruction,24,7);
     if(func3=="000" && func7=="0000000") return add;
     else if(func3=="000" && func7=="0100000") return sub;
-    else if(func3=="001") return sll;
-    else if(func3=="010") return slt;
-    else if(func3=="011") return sltu;
-    else if(func3=="100") return xor;
-    else if(func3=="101") return srl;
-    else if(func3=="110") return or;
-    else if(func3=="111") return and;
+    else if(func3=="001") return "add";
+    else if(func3=="010") return "slt";
+    else if(func3=="011") return "sltu";
+    else if(func3=="100") return "xor";
+    else if(func3=="101") return "srl";
+    else if(func3=="110") return "or";
+    else if(func3=="111") return "and";
     else{
         string g="this instruction is not R type "
         return g;
@@ -229,6 +229,29 @@ void R_executer(string instruction,string register_arr[]){
     register in the file registers. */
     string rd_binary = Substring(instruction, 20, 5) ; // same story now for rd
     int rd_value= BinaryToInteger(rd_binary, 5) ;
+
+    if(is_R_type=="add"){
+          int rs1_integer_value = BinaryToInteger(register_arr[rs1_value], 32) ; // integer value of rs
+          int rs2_integer_value = BinaryTOInteger(register_arr[rs2_value],32);
+          int rd_int_answer = rs1_integer_value + rs2_integer_value ; // Integral value of rd 
+          string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
+          register_array[rd] = rd_bin_answer ;
+    }
+   else if(is_R_type=="sub"){
+        // rs is not specified in whwther 1 or 2
+        // i consider with rs1
+         int rs1_integer_value = BinaryToInteger(register_arr[rs1_value], 32);
+         int rd_int_answer = 0-rs1_integer_value ;
+         string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
+         register_array[rd] = rd_bin_answer ;
+    }
+    else if(is_R_type=="sub"){
+        int rs1_integer_value = BinaryToInteger(register_arr[rs1_value], 32);
+        int rs2_integer_value = BinaryTOInteger(register_arr[rs2_value],32);
+        int rd_int_answer = rs1_integer_value-rs2_integer_value ;
+        string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
+        register_array[rd] = rd_bin_answer ;
+    }
 }
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
     string opcode;
