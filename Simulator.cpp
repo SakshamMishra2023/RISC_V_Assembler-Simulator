@@ -278,6 +278,12 @@ void R_executer(string instruction,string register_arr[]){
         string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
         register_array[rd] = rd_bin_answer ;
     }
+    else if(is_R_type=="xor"){
+        int rs1_integer_value = BinaryToInteger(register_arr[rs1_value], 32);
+        int rs2_integer_value = BinaryTOInteger(register_arr[rs2_value],32);
+        // pending 
+    }
+    
 }
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
     string opcode;
