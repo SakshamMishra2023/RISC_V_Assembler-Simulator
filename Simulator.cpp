@@ -42,29 +42,26 @@ string decimalToBinary32(int decimal){
     return binaryRepresentation.to_string();
 }
 
-int BinaryToInteger(string binary, int len){
-    // given a string of bits and it's length, it returns it's integer value, assuming 2's complement system
-    int power = 1; int ans = 0 ;
-    int bit , value ;
-    
-    int number = stoi(binary) ;
-    for(int i = 0; i < len; i++){
-        bit = number % 10 ;
-        value = bit * power ;
-        ans = ans + value ;
-        // preparing for next iteration
-        power = 2 * power ;
-        number = number / 10 ;
+long BinaryToInteger(string& binary, int len) {
+    long ans = 0;
+
+    // Start from the most significant bit
+    int power = 1 << (len - 1);
+
+    // Loop through each character of the binary string
+    for (char bit : binary) {
+        if (bit == '1') {
+            ans += power;
+        }
+        power >>= 1; // Move to the next lower bit
     }
-    
-    if(binary[0] == '1'){
-        // negative number
-        // power == pow(2, len) ;
-        ans = power - ans ;
-        ans = - ans ;
+
+    // Handle negative numbers (two's complement)
+    if (binary[0] == '1') {
+        ans -= (1 << len);
     }
-    
-    return ans ;
+
+    return ans;
 }
 
 string bitwisexor(const string& a, const string& b) {
@@ -116,7 +113,7 @@ string Substring(string input, int start_idx, int len){
     }
     return ans ;
 }
-void b_simu(string &bcode, map<string, long> register_map,map<int, string> register_add_map, int &pc){
+void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &register_add_map, int &pc){
     //beq
     if(bcode.substr(17,3) == "000"){
         string dummy1 = '0' + bcode.substr(7,5);
@@ -273,7 +270,7 @@ void b_simu(string &bcode, map<string, long> register_map,map<int, string> regis
     }
 }
 
-void j_simu(string &bcode, map<string, long> register_map,map<int, string> register_add_map, int &pc){
+void j_simu(string &bcode, map<string, long> &register_map,map<int, string> &register_add_map, int &pc){
     string imm = bcode.substr(0,1)+ bcode.substr(12,8) + bcode.substr(11,1) + bcode.substr(1,10);
     int imm_val = BinaryToInteger(imm, 20);
     string dummy = '0' + bcode.substr(20,5);
@@ -288,7 +285,7 @@ void j_simu(string &bcode, map<string, long> register_map,map<int, string> regis
     return;
 
 }
-void r_simu(string &bcode , map<string,long> register_map, map<int, string> register_add_map, int &pc){
+void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
 
     string dummy1 = '0' + bcode.substr(7,5);
     int reg_no1 = BinaryToInteger(dummy1, 6);
@@ -408,7 +405,7 @@ void r_simu(string &bcode , map<string,long> register_map, map<int, string> regi
 
 }
 
-void s_simu(string &bcode , map<string,long> register_map, map<int, string> register_add_map, int &pc,map<string, int> &program_mem){
+void s_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem){
     if(bcode.substr(17,3) == "010"){
         string imm_val = bcode.substr(0,7) + bcode.substr(20,5);
         int imm = BinaryToInteger(imm_val,12);
@@ -431,7 +428,7 @@ void s_simu(string &bcode , map<string,long> register_map, map<int, string> regi
 
 }
 
-void u_simu(string &bcode , map<string,long> register_map, map<int, string> register_add_map, int &pc){
+void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
     if(bcode.substr(25,7) == "0110111"){
         string imm_val = bcode.substr(0,20) ;
         int imm = BinaryToInteger(imm_val,20);
@@ -459,7 +456,7 @@ void u_simu(string &bcode , map<string,long> register_map, map<int, string> regi
 
 }
 
-void i_simu(string &bcode , map<string,long> register_map, map<int, string> register_add_map, int &pc,map<string, int> &program_mem ){
+void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem ){
     //lw
     if(bcode.substr(17,3) == "010"){
 
