@@ -158,7 +158,7 @@ void I_Type_Executer(string instruction, string register_array[]){
 
     string opcode = "" ; 
     if(opcode == "addi"){
-        int rs_integer_value = BinaryToInteger(register_array[rs], 32) ; // integral value of rs
+        int rs_integer_value = BinaryToInteger(register_array[rs], 32) ; // integer value of rs
 
         int rd_int_answer = rs_integer_value + imm_val ; // Integral value of rd 
         string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
@@ -220,6 +220,16 @@ string is_R_type(string instruction){
     
 }
 
+void R_executer(string instruction,string register_arr[]){
+    string rs1_binary = Substring(instruction, 0, 12) ; // bits of the rs1
+    int rs1_value = BinaryToInteger(rs1_binary, 12) ; // integer value of rs1
+
+    string rs2_binary = Substring(instruction, 12, 5) ; // binary representation of rs2
+    int rs2_value = BinaryToInteger(rs2_binary, 5) ; /* this is the corresponding number of the 
+    register in the file registers. */
+    string rd_binary = Substring(instruction, 20, 5) ; // same story now for rd
+    int rd_value= BinaryToInteger(rd_binary, 5) ;
+}
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
     string opcode;
     opcode = bcode.substr(26,6);
