@@ -59,6 +59,18 @@ string bitwiseOr(const string& bin1, const string& bin2) {
     return result;
 }
 
+string bitwiseAND(const string& binary1, const string& binary2) {
+    // Convert binary strings to integers
+    bitset<32> bits1(binary1);
+    bitset<32> bits2(binary2);
+    
+    // Perform bitwise AND operation
+    bitset<32> result = bits1 & bits2;
+    
+    // Convert result back to binary string
+    return result.to_string();
+}
+
 string Substring(string input, int start_idx, int len){
     // Returns a substring of input string starting from start_idx and has length len
     string ans = "" ;
