@@ -667,7 +667,8 @@ void classifier(string & bcode,map<string, long> register_map, map<int, string> 
         j_simu(bcode, register_map, register_add_map, pc );
     }
 
-    else if(opcode == ""){
+    else{
+        pc = pc + 1;
 
     }
 
