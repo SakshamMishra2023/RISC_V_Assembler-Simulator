@@ -300,9 +300,15 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
     //register_map[register_add_map[reg_no3]];
 
     if(bcode.substr(0,7)=="0000000" && bcode.substr(17,3) == "000"){
-        register_map[register_add_map[reg_no3]] = reg1 + reg2;
-        pc = pc + 1;
-        
+       //  register_map[register_add_map[reg_no3]] = reg1 + reg2;
+        long ans = reg1 + reg2 ;
+        long long max = pow(2, 31) ; // max positive value of 32 bits with 2's complement 
+        if(ans >= max){
+            // overflow has occurred
+            ans = ans - max ;
+        }
+        register_map[register_add_map[reg_no3]] = ans ;
+        pc = pc + 1 ;         
     }
     else if(bcode.substr(0,7)=="0100000" && bcode.substr(17,3) == "000"){
         register_map[register_add_map[reg_no3]] = reg1 - reg2;
@@ -457,9 +463,25 @@ void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 }
 
 void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem ){
-    //lw
-    if(bcode.substr(17,3) == "010"){
+    // Given an I type string, this executes it, i.e. does the needed changes in PC and File registers.
 
+    string opcode = instruction.substr(25, 7) ;
+    string func3 = instruction.substr(17, 3) ;
+    string imm_binary = instruction.substr(0, 12) ; // bits of the immediate
+    int imm_val = BinaryToInteger(imm_binary, 12) ; // integer value of immediate, assuming 2's complement
+
+    string rs_bin = instruction.substr(12, 5) ; // binary representation of rs1
+    int rs = BinaryToInteger('0' + rs_bin, 6) ; /* this is the corresponding number of the 
+    register in the file registers. */
+    string rs_abi = register_add_map[rs] ; // abi of rs
+
+    string rd_bin = instruction.substr(20, 5) ; // same story now for rd
+    int rd = BinaryToInteger('0' + rd_bin, 6) ; 
+    string rd_abi = register_add_map[rd] ; // abi of rd
+
+    
+    if(opcode == " 0000011" && func3 == "010"){
+        // lw
         string imm_val = bcode.substr(0,7) + bcode.substr(20,5);
         int imm = BinaryToInteger(imm_val,12);
 
@@ -476,7 +498,37 @@ void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 
         register_map[register_add_map[reg_no2]] = program_mem[hex_add];
         pc= pc + 1;
+    }
+    else if(opcode == "0010011" && func3 == "000"){
+        // addi
+        int ans ;
+        ans = register_map[rs_abi] + imm_val ;
+        long long max = pow(2, 31) ; // max value of 32 bits with 2's complement 
+        if(ans >= max){
+            // overflow has occurred
+            ans = ans - max ;
+        }
+        register_map[rd_abi] = ans ;
+        pc++ ;
+    }
+    else if(opcode == "0010011" && func3 == "011"){
+        // sltiu
+        string binary_rs = decimalToBinary32(register_map[rs_abi]) ; // bin. repres. of the value of rs
+        int unsigned_value_of_rs = BinaryToInteger('0' + binary_rs, 33) ; // unsigned value of binary_rs
+        int unsigned_value_of_imm = BinaryToInteger('0' + imm_binary, 13) ; // unsigned value of imm
 
+        if(unsigned_value_of_rs < unsigned_value_of_imm){
+            register_map[rd_abi] = 1 ;
+        }
+        pc++ ;
+    }
+    else if(opcode == "1100111" && func3 == "000"){
+        // jalr
+        int return_addres = pc + 1 ; // the just next instruction
+        int address_to_go = register_map[rs_abi] + imm_val ;
+
+        register_map[rd_abi] = return_addres ; // save return address here.
+        pc = address_to_go ; // now go here
     }
 }
 
