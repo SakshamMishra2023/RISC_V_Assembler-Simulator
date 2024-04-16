@@ -329,7 +329,7 @@ void R_executer(string instruction,string register_arr[]){
         
     }
     else if(is_R_type=="or"){
-        string rd_bin_answer = bitwise(rs1_binary,rs2_binary);
+        string rd_bin_answer = bitwiseor(rs1_binary,rs2_binary);
         register_array[rd] = rd_bin_answer ;
     }
     else if(is_R_type=="and"){
