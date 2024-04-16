@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <bitset>
 
 using namespace std;
 
@@ -30,6 +31,32 @@ int BinaryToInteger(string binary, int len){
     }
     
     return ans ;
+}
+
+string bitwisexor(const string& a, const string& b) {
+    // Convert binary strings to integers
+    bitset<32> num1(a);
+    bitset<32> num2(b);
+    // Perform bitwise XOR
+    bitset<32> result = (num1 ^ num2);
+
+    // Convert result back to binary string
+    return result.to_string();
+}
+
+string bitwiseOr(const string& bin1, const string& bin2) {
+    // Ensure both strings have the same length
+    int length = max(bin1.length(), bin2.length());
+    string result(length, '0');
+
+    // Perform bitwise OR
+    for (int i = 0; i < length; ++i) {
+        int bit1 = i < bin1.length() ? bin1[bin1.length() - 1 - i] - '0' : 0;
+        int bit2 = i < bin2.length() ? bin2[bin2.length() - 1 - i] - '0' : 0;
+        result[length - 1 - i] = (bit1 | bit2) + '0';
+    }
+
+    return result;
 }
 
 string Substring(string input, int start_idx, int len){
@@ -279,9 +306,18 @@ void R_executer(string instruction,string register_arr[]){
         register_array[rd] = rd_bin_answer ;
     }
     else if(is_R_type=="xor"){
-        int rs1_integer_value = BinaryToInteger(register_arr[rs1_value], 32);
-        int rs2_integer_value = BinaryTOInteger(register_arr[rs2_value],32);
-        // pending 
+         string rd_bin_answer = bitwisexor(rs1_binary,rs2_binary) ; // Integral value of rd 
+         //string rd_bin_answer = decimalToBinary32(rd_int_answer) ; // This is what we'll store back into rd
+         register_array[rd] = rd_bin_answer ;
+    }
+    else if(is_R_type=="sll"){
+        
+    }
+    else if(is_R_type=="srl"){
+        
+    }
+    else if(is_R_type=="or"){
+        
     }
     
 }
