@@ -130,7 +130,7 @@ void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
         return;
         }
         else{
-            pc = pc + 1;
+            pc = pc + 4;
         }
         return;
 
@@ -153,7 +153,7 @@ void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
         return;
         }
         else{
-            pc = pc + 1;
+            pc = pc + 4;
         }
         return;
 
@@ -176,7 +176,7 @@ void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
         return;
         }
         else{
-            pc = pc + 1;
+            pc = pc + 4;
         }
         return;
 
@@ -234,7 +234,7 @@ void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
         return;
         }
         else{
-            pc = pc + 1;
+            pc = pc + 4;
         }
         return;
 
@@ -263,7 +263,7 @@ void b_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
         return;
         }
         else{
-            pc = pc + 1;
+            pc = pc + 4;
         }
         return;
 
@@ -308,11 +308,11 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
             ans = ans - max ;
         }
         register_map[register_add_map[reg_no3]] = ans ;
-        pc = pc + 1 ;         
+        pc = pc + 4 ;         
     }
     else if(bcode.substr(0,7)=="0100000" && bcode.substr(17,3) == "000"){
         register_map[register_add_map[reg_no3]] = reg1 - reg2;
-        pc = pc + 1;
+        pc = pc + 4;
         
     }
     //sll
@@ -329,7 +329,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         long final = BinaryToInteger(new_reg1, 32);
         register_map[register_add_map[reg_no3]] = final;
 
-        pc =pc+1;
+        pc =pc+4;
 
     }
     //srl
@@ -346,7 +346,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         long final = BinaryToInteger(new_reg1, 32);
         register_map[register_add_map[reg_no3]] = final;
 
-        pc =pc+1;
+        pc =pc+4;
 
     }
     //or
@@ -357,7 +357,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         long reg_3_int = BinaryToInteger(new_reg_bin,32);
         register_map[register_add_map[reg_no3]] = reg_3_int;
 
-        pc= pc + 1;
+        pc= pc + 4;
 
 
     }
@@ -369,7 +369,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         string new_reg_bin = bitwiseand(reg1_bin,reg2_bin);
         long reg_3_int = BinaryToInteger(new_reg_bin,32);
         register_map[register_add_map[reg_no3]] = reg_3_int;
-        pc= pc +1 ;
+        pc= pc +4 ;
 
     }
     //xor
@@ -380,7 +380,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         string new_reg_bin = bitwisexor(reg1_bin,reg2_bin);
         long reg_3_int = BinaryToInteger(new_reg_bin,32);
         register_map[register_add_map[reg_no3]] = reg_3_int;
-        pc= pc + 1 ;
+        pc= pc + 4 ;
 
     }
     //slt
@@ -388,7 +388,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         if(reg2>reg1){
             register_map[register_add_map[reg_no3]] = 1;
         }
-        pc = pc + 1;
+        pc = pc + 4;
     }
 
     //sltu
@@ -404,7 +404,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         if(reg2>reg1){
             register_map[register_add_map[reg_no3]] = 1;
         }
-        pc = pc + 1;
+        pc = pc + 4;
     }
     
 
@@ -428,7 +428,7 @@ void s_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         string hex_add = "0x" + IntToHex32BitString(hex_int_add);
 
         program_mem[hex_add] = reg_no2;
-        pc= pc + 1;
+        pc= pc + 4;
 
     }
 
@@ -444,7 +444,7 @@ void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 
         int reg_fin_val = pc + imm;
         register_map[register_add_map[reg_add]] = reg_fin_val;
-        pc = pc + 1; 
+        pc = pc + 4; 
 
     }
     else if(bcode.substr(25,7) == "0010111"){
@@ -456,7 +456,7 @@ void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 
         int reg_fin_val = imm;
         register_map[register_add_map[reg_add]] = reg_fin_val;
-        pc = pc + 1;
+        pc = pc + 4;
 
     }
 
@@ -465,39 +465,45 @@ void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem ){
     // Given an I type string, this executes it, i.e. does the needed changes in PC and File registers.
 
-    string opcode = instruction.substr(25, 7) ;
-    string func3 = instruction.substr(17, 3) ;
-    string imm_binary = instruction.substr(0, 12) ; // bits of the immediate
+    string opcode = bcode.substr(25, 7) ;
+    string func3 = bcode.substr(17, 3) ;
+    string imm_binary = bcode.substr(0, 12) ; // bits of the immediate
     int imm_val = BinaryToInteger(imm_binary, 12) ; // integer value of immediate, assuming 2's complement
 
-    string rs_bin = instruction.substr(12, 5) ; // binary representation of rs1
-    int rs = BinaryToInteger('0' + rs_bin, 6) ; /* this is the corresponding number of the 
+    string rs_bin = bcode.substr(12, 5) ; // binary representation of rs1
+    string rs_fin = '0' + rs_bin;
+    int rs = BinaryToInteger(rs_fin, 6) ; /* this is the corresponding number of the 
+
     register in the file registers. */
     string rs_abi = register_add_map[rs] ; // abi of rs
 
-    string rd_bin = instruction.substr(20, 5) ; // same story now for rd
-    int rd = BinaryToInteger('0' + rd_bin, 6) ; 
+    string rd_bin = bcode.substr(20, 5) ; // same story now for rd
+    string rd_fin = '0' + rd_bin;
+    int rd = BinaryToInteger(rd_fin, 6) ; 
     string rd_abi = register_add_map[rd] ; // abi of rd
 
     
-    if(opcode == " 0000011" && func3 == "010"){
+    if(opcode == "0000011" && func3 == "010"){
         // lw
-        string imm_val = bcode.substr(0,7) + bcode.substr(20,5);
+        string imm_val = bcode.substr(0,12);
         int imm = BinaryToInteger(imm_val,12);
 
         string reg1 = '0' + bcode.substr(12,5);
         int reg_no1 = BinaryToInteger(reg1, 6);
 
-        string reg2 = '0' + bcode.substr(7,5);
+        string reg2 = '0' + bcode.substr(20,5);
         int reg_no2 = BinaryToInteger(reg2, 6);
+        //cout<<imm;
 
         long reg1_val = register_map[register_add_map[reg_no1]];
         long hex_int_add = imm + reg1_val;
+    
 
         string hex_add = "0x" + IntToHex32BitString(hex_int_add);
+    
 
         register_map[register_add_map[reg_no2]] = program_mem[hex_add];
-        pc= pc + 1;
+        pc= pc + 4;
     }
     else if(opcode == "0010011" && func3 == "000"){
         // addi
@@ -509,18 +515,20 @@ void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
             ans = ans - max ;
         }
         register_map[rd_abi] = ans ;
-        pc++ ;
+        pc=pc+4 ;
     }
     else if(opcode == "0010011" && func3 == "011"){
         // sltiu
         string binary_rs = decimalToBinary32(register_map[rs_abi]) ; // bin. repres. of the value of rs
-        int unsigned_value_of_rs = BinaryToInteger('0' + binary_rs, 33) ; // unsigned value of binary_rs
-        int unsigned_value_of_imm = BinaryToInteger('0' + imm_binary, 13) ; // unsigned value of imm
+        string fin_bin_rs= '0'+binary_rs;
+        int unsigned_value_of_rs = BinaryToInteger(fin_bin_rs, 33) ; // unsigned value of binary_rs
+        string imm_bin_fin = '0' + imm_binary;
+        int unsigned_value_of_imm = BinaryToInteger(imm_bin_fin, 13) ; // unsigned value of imm
 
         if(unsigned_value_of_rs < unsigned_value_of_imm){
             register_map[rd_abi] = 1 ;
         }
-        pc++ ;
+        pc=pc+4 ;
     }
     else if(opcode == "1100111" && func3 == "000"){
         // jalr
@@ -860,7 +868,7 @@ while(getline(input_file, line)){
 
 while(pc <= total){
 
-    classifier(instruction[pc], register_map, register_add_map, pc, program_mem);
+    classifier(instruction[(pc/4)], register_map, register_add_map, pc, program_mem);
     if(output_file.is_open()){
         string pc_bin = "0b" + decimalToBinary32(pc);
         cout << pc_bin << " ";
