@@ -785,9 +785,53 @@ while(getline(input_file, line)){
 }
 
 while(pc <= total){
-    classifier(instruction[pc], register_map, register_add_map, pc, program_mem);
-    
 
+    classifier(instruction[pc], register_map, register_add_map, pc, program_mem);
+    if(output_file.is_open()){
+        string pc_bin = "0b" + decimalToBinary32(pc);
+        cout << pc_bin << " ";
+    
+        for(int i = 0; i< 32;i++){
+            string reg_bin = "0b" + decimalToBinary32(register_map[register_add_map[i]]);
+            cout<< reg_bin <<" ";   
+        }
+        cout<<endl;
+    }
+    
 }
+cout <<"0x00010000:" << program_mem["0x00010000"] << endl;
+cout <<"0x00010004:" << program_mem["0x00010004"] << endl;
+cout <<"0x00010008:" << program_mem["0x00010008"] << endl;
+cout <<"0x0001000c:" << program_mem["0x0001000c"] << endl;
+cout <<"0x00010010:" << program_mem["0x00010010"] << endl;
+cout <<"0x00010014:" << program_mem["0x00010014"] << endl;
+cout <<"0x00010018:" << program_mem["0x00010018"] << endl;
+cout <<"0x0001001c:" << program_mem["0x0001001c"] << endl;
+cout <<"0x00010020:" << program_mem["0x00010020"] << endl;
+cout <<"0x00010024:" << program_mem["0x00010024"] << endl;
+cout <<"0x00010028:" << program_mem["0x00010028"] << endl;
+cout <<"0x0001002c:" << program_mem["0x0001002c"] << endl;
+cout <<"0x00010030:" << program_mem["0x00010030"] << endl;
+cout <<"0x00010034:" << program_mem["0x00010034"] << endl;
+cout <<"0x00010038:" << program_mem["0x00010038"] << endl;
+cout <<"0x0001003c:" << program_mem["0x0001003c"] << endl;
+cout <<"0x00010040:" << program_mem["0x00010040"] << endl;
+cout <<"0x00010044:" << program_mem["0x00010044"] << endl;
+cout <<"0x00010048:" << program_mem["0x00010048"] << endl;
+cout <<"0x0001004c:" << program_mem["0x0001004c"] << endl;
+cout <<"0x00010050:" << program_mem["0x00010050"] << endl;
+cout <<"0x00010054:" << program_mem["0x00010054"] << endl;
+cout <<"0x00010058:" << program_mem["0x00010058"] << endl;
+cout <<"0x0001005c:" << program_mem["0x0001005c"] << endl;
+cout <<"0x00010060:" << program_mem["0x00010060"] << endl;
+cout <<"0x00010064:" << program_mem["0x00010064"] << endl;
+cout <<"0x00010068:" << program_mem["0x00010068"] << endl;
+cout <<"0x0001006c:" << program_mem["0x0001006c"] << endl;
+cout <<"0x00010070:" << program_mem["0x00010070"] << endl;
+cout <<"0x00010074:" << program_mem["0x00010074"] << endl;
+cout <<"0x00010078:" << program_mem["0x00010078"] << endl;
+cout <<"0x0001007c:" << program_mem["0x0001007c"] << endl;
+
+output_file.close();
     return 0;
 }
