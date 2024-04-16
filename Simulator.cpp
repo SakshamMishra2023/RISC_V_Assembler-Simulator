@@ -59,7 +59,7 @@ string bitwiseOr(const string& bin1, const string& bin2) {
     return result;
 }
 
-string bitwiseAND(const string& binary1, const string& binary2) {
+string bitwiseand(const string& binary1, const string& binary2) {
     // Convert binary strings to integers
     bitset<32> bits1(binary1);
     bitset<32> bits2(binary2);
@@ -329,9 +329,13 @@ void R_executer(string instruction,string register_arr[]){
         
     }
     else if(is_R_type=="or"){
-        
+        string rd_bin_answer = bitwise(rs1_binary,rs2_binary);
+        register_array[rd] = rd_bin_answer ;
     }
-    
+    else if(is_R_type=="and"){
+        string rd_bin_answer = bitwiseand(rs1_binary,rs2_binary);
+        register_array[rd] = rd_bin_answer ;
+    }
 }
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
     string opcode;
