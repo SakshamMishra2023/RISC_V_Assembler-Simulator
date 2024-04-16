@@ -729,7 +729,7 @@ int main(){
     register_add_map[30] = "t5";
     register_add_map[31] = "t6";
 
-        map<string, int> program_mem;
+    map<string, int> program_mem;
     
     program_mem["0x00010000"] = 0;
     program_mem["0x00010004"] = 0;
@@ -791,65 +791,3 @@ while(pc <= total){
 }
     return 0;
 }
-
-
-
-// comments //
-/*
-string is_U_type(string instruction){
-     Given the input string, returns what kind of U-Type instruction it is or "false" if not a U-Type 
-    string opcode = substring(instruction,25,7);
-    if(opcode == "0110111"){
-        return "lui";
-    } 
-    else if (opcode == "0010111"){
-        return "auipc";
-    }
-    return "false"; 
-}
-
-void U_Type_Executer(string instruction, string register_array[]){
-    // Given a U type string, this executes it, i.e. does the needed changes in PC and File registers.
-
-    string imm_binary = Substring(instruction, 0, 20); // Bits of the immediate
-    string rd_bin = Substring(instruction, 20, 5); // Binary representation of rd
-    string opcode = Substring(instruction, 25, 7); // Opcode of the instruction
-
-    int imm_val = BinaryToInteger(imm_binary, 20); // Integer value of immediate
-    int rd = BinaryToInteger(rd_bin, 5); // Corresponding register number in the file registers
-
-    string opcode = Substring(instruction, 25, 7); // Opcode of the instruction
-
-    if (opcode == "0110111"){ // LUI
-        register_array[rd] = decimalToBinary32(imm_val << 12);
-    } 
-    else if (opcode == "0010111"){ // AUIPC
-        int pc_value = BinaryToInteger(register_array[32], 32);
-        register_array[rd] = decimalToBinary32(pc_value + (imm_val << 12));
-    }
-}
-
-string is_S_type(string instruction){
-     Given the input string, returns if it is S-Type instruction or not 
-    string opcode= substring(instruction,25,7);
-    string fucn3= substring(instruction,17,3);
-
-    if(opcode == "0100011" && fucn3 == "010"){
-        return "sw";
-    }
-    return "false";
-}
-void S_Type_Executer(string instruction, string register_array[]){
-    // Given an S type string, this executes it, i.e. does the needed changes in PC and File registers.
-    string imm4_0_binary = Substring(instruction, 0, 5); 
-    string rs2_bin = Substring(instruction, 7, 5); 
-    string rs1_bin = Substring(instruction, 12, 5); 
-    string imm11_5_binary = Substring(instruction, 25, 7); 
-
-    int imm4_0_val = BinaryToInteger(imm4_0_binary, 5); // Convert imm[4:0] to integer
-    int rs2 = BinaryToInteger(rs2_bin, 5); // Convert rs2 to integer
-    int rs1 = BinaryToInteger(rs1_bin, 5); // Convert rs1 to integer
-    int imm11_5_val = BinaryToInteger(imm11_5_binary, 7); // Convert imm[11:5] to integer
-
-    int imm_val = (imm11_5_val << 5) | imm4_0_val; // Combine imm[11:5] and imm[4:0] to form the final immediate value*/
-
