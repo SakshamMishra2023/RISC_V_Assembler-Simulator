@@ -199,6 +199,26 @@ string is_I_type(string instruction){
     return "false" ; // the instruction is not I-Type at all.
 } 
 
+string is_R_type(string instruction){
+    //string opcode=substring(instruction,25,7);
+    string func3=substring(instruction,17,3);
+    string func7=substring(instruction,24,7);
+    if(func3=="000" && func7=="0000000") return add;
+    else if(func3=="000" && func7=="0100000") return sub;
+    else if(func3=="001") return sll;
+    else if(func3=="010") return slt;
+    else if(func3=="011") return sltu;
+    else if(func3=="100") return xor;
+    else if(func3=="101") return srl;
+    else if(func3=="110") return or;
+    else if(func3=="111") return and;
+    else{
+        string g="this instruction is not R type "
+        return g;
+    }
+    
+    
+}
 
 void classifier(string & bcode,map<string, int> register_map, map<int, string> register_add_map, int & pc){
     string opcode;
