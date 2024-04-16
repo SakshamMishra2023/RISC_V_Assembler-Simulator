@@ -459,6 +459,30 @@ void u_simu(string &bcode , map<string,long> register_map, map<int, string> regi
 
 }
 
+void i_simu(string &bcode , map<string,long> register_map, map<int, string> register_add_map, int &pc,map<string, int> &program_mem ){
+    //lw
+    if(bcode.substr(17,3) == "010"){
+
+        string imm_val = bcode.substr(0,7) + bcode.substr(20,5);
+        int imm = BinaryToInteger(imm_val,12);
+
+        string reg1 = '0' + bcode.substr(12,5);
+        int reg_no1 = BinaryToInteger(reg1, 6);
+
+        string reg2 = '0' + bcode.substr(7,5);
+        int reg_no2 = BinaryToInteger(reg2, 6);
+
+        long reg1_val = register_map[register_add_map[reg_no1]];
+        long hex_int_add = imm + reg1_val;
+
+        string hex_add = "0x" + IntToHex32BitString(hex_int_add);
+
+        register_map[register_add_map[reg_no2]] = program_mem[hex_add];
+        pc= pc + 1;
+
+    }
+}
+
 
 
 
@@ -623,7 +647,7 @@ void classifier(string & bcode,map<string, long> register_map, map<int, string> 
         r_simu(bcode,register_map,register_add_map,pc );
     }
     else if(opcode == "0000011" || opcode == "0010011" || opcode == "1100111"){
-        i_simu(bcode,register_map,register_add_map,pc );
+        i_simu(bcode,register_map,register_add_map,pc,program_mem );
 
     }
     else if(opcode == "0100011"){
