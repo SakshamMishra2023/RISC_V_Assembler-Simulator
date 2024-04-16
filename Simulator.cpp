@@ -287,16 +287,16 @@ void j_simu(string &bcode, map<string, long> &register_map,map<int, string> &reg
 }
 void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
 
-    string dummy1 = '0' + bcode.substr(7,5);
-    int reg_no1 = BinaryToInteger(dummy1, 6);
-    long reg2 = register_map[register_add_map[reg_no1]];
-
-    string dummy2 = '0' + bcode.substr(12,5);
+    string dummy2 = '0' + bcode.substr(7,5);
     int reg_no2 = BinaryToInteger(dummy2, 6);
-    long reg1 = register_map[register_add_map[reg_no2]];
+    long reg2 = register_map[register_add_map[reg_no2]];
+
+    string dummy1 = '0' + bcode.substr(12,5);
+    int reg_no1 = BinaryToInteger(dummy1, 6);
+    long reg1 = register_map[register_add_map[reg_no1]];
 
     string dummy3 = '0' + bcode.substr(20,5);
-    long reg_no3 = BinaryToInteger(dummy2, 6);
+    long reg_no3 = BinaryToInteger(dummy3, 6);
     //register_map[register_add_map[reg_no3]];
 
     if(bcode.substr(0,7)=="0000000" && bcode.substr(17,3) == "000"){
