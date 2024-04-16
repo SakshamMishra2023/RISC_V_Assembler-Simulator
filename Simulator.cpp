@@ -8,6 +8,40 @@
 
 using namespace std;
 
+string IntToHex32BitString(int value){
+    // Ensure value fits within 32 bits
+    value &= 0xFFFFFFFF;
+
+    // Create a stringstream to format the hexadecimal string
+    std::stringstream ss;
+    ss << std::hex << std::setw(8) << std::setfill('0') << value;
+
+    // Convert the hexadecimal string to uppercase
+    std::string hex_str = ss.str();
+    for (char& c : hex_str) {
+        c = toupper(c);
+    }
+
+    // Return the formatted hexadecimal string
+    return hex_str;
+}
+
+string decimalToBinary32(int decimal){
+    bitset<32> binaryRepresentation;
+
+    if(decimal < 0){
+        // Calculate the two's complement
+        int positiveEquivalent = 4294967296 + decimal; // 2^12
+        binaryRepresentation = bitset<32>(decimal);
+    } 
+    else{
+        // Positive number: directly convert to binary
+        binaryRepresentation = bitset<32>(decimal);
+    }
+
+    return binaryRepresentation.to_string();
+}
+
 int BinaryToInteger(string binary, int len){
     // given a string of bits and it's length, it returns it's integer value, assuming 2's complement system
     int power = 1; int ans = 0 ;
