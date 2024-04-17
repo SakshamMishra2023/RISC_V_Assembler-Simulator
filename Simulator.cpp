@@ -1,103 +1,42 @@
 #include <iostream>
-#include <map>
-#include <fstream>
 #include <string>
-#include <cmath>
+#include <regex>
+#include <fstream>
 #include <sstream>
-#include <bitset>
 #include <iomanip>
+#include <unordered_map>
+#include <bitset>
 
 using namespace std;
+bool keyExists(const std::unordered_map<string, int>& map, const string& key) {
+    return map.find(key) != map.end();
+}
+bool is_number(string& s){
+     return !s.empty() && std::find_if(s.begin() + (s[0] == '-' ? 1 : 0), s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();;
+}
 
-long long BinaryToInteger(string& binary, int len) {
-    long long ans = 0;
+bool checkLastLine(string& filename, regex& regexPattern){
+    ifstream inputFile(filename);
+    
+    string line;
+    string lastNonEmptyLine;
 
-    // Determine the sign of the number
-    bool is_negative = (binary[0] == '1');
-
-    // Start from the most significant bit
-    long long power = 1LL << (len - 1);
-
-    // Loop through each character of the binary string
-    for (char bit : binary) {
-        if (bit == '1') {
-            ans += power;
+    while(getline(inputFile, line)){
+        if(!line.empty()){
+            lastNonEmptyLine=line;
         }
-        power >>= 1; // Move to the next lower bit
     }
+    inputFile.close();
 
-    // Handle negative numbers (two's complement)
-    if (is_negative) {
-        ans = -(1LL << len) + ans;
-    }
-
-    return ans;
+    return regex_search(lastNonEmptyLine, regexPattern);
 }
-
-
-
-string bitwisexor(const string& a, const string& b) {
-    // Convert binary strings to integers
-    bitset<32> num1(a);
-    bitset<32> num2(b);
-    // Perform bitwise XOR
-    bitset<32> result = (num1 ^ num2);
-
-    // Convert result back to binary string
-    return result.to_string();
-}
-
-string bitwiseOr(const string& bin1, const string& bin2) {
-    // Ensure both strings have the same length
-    int length = max(bin1.length(), bin2.length());
-    string result(length, '0');
-
-    // Perform bitwise OR
-    for (int i = 0; i < length; ++i) {
-        int bit1 = i < bin1.length() ? bin1[bin1.length() - 1 - i] - '0' : 0;
-        int bit2 = i < bin2.length() ? bin2[bin2.length() - 1 - i] - '0' : 0;
-        result[length - 1 - i] = (bit1 | bit2) + '0';
-    }
-
-    return result;
-}
-
-string bitwiseand(const string& binary1, const string& binary2) {
-    // Convert binary strings to integers
-    bitset<32> bits1(binary1);
-    bitset<32> bits2(binary2);
-    
-    // Perform bitwise AND operation
-    bitset<32> result = bits1 & bits2;
-    
-    // Convert result back to binary string
-    return result.to_string();
-}
-
-string IntToHex32BitString(int value){
-    // Ensure value fits within 32 bits
-    value &= 0xFFFFFFFF;
-
-    // Create a stringstream to format the hexadecimal string
-    std::stringstream ss;
-    ss << std::hex << std::setw(8) << std::setfill('0') << value;
-
-    // Convert the hexadecimal string to uppercase
-    std::string hex_str = ss.str();
-    
-
-    // Return the formatted hexadecimal string
-    return hex_str;
-}
-
-
-std::string decimalToBinary32(int decimal) {
+string decimalToBinary32(int decimal){
     std::bitset<32> binaryRepresentation;
 
     if (decimal < 0) {
         // Calculate the two's complement
-        int positiveEquivalent = 4294967296 + decimal; // 2^32
-        binaryRepresentation = std::bitset<32>(positiveEquivalent);
+        int positiveEquivalent = 4294967296 + decimal; // 2^12
+        binaryRepresentation = bitset<32>(decimal);
     } else {
         // Positive number: directly convert to binary
         binaryRepresentation = std::bitset<32>(decimal);
@@ -105,714 +44,880 @@ std::string decimalToBinary32(int decimal) {
 
     return binaryRepresentation.to_string();
 }
+string decimalToBinary16(int decimal){
+    std::bitset<16> binaryRepresentation;
 
-
-long long BinaryToInteger1(string& binary, int len){
-    long long ans = 0;
-
-    // Start from the most significant bit
-    long long power = 1 << (len - 1);
-
-    // Loop through each character of the binary string
-    for (char bit : binary) {
-        if (bit == '1') {
-            ans += power;
-        }
-        power >>= 1; // Move to the next lower bit
+    if (decimal < 0) {
+        // Calculate the two's complement
+        int positiveEquivalent = 65536 + decimal; // 2^12
+        binaryRepresentation = bitset<16>(decimal);
+    } else {
+        // Positive number: directly convert to binary
+        binaryRepresentation = std::bitset<16>(decimal);
     }
 
-    // Handle negative numbers (two's complement)
-    if (binary[0] == '1') {
-        ans -= (1 << len);
-    }
-
-    return ans;
-}
-
-void b_simu(string &bcode, map<string, long> register_map,map<int, string> register_add_map, int &pc){
-    //beq
-    if(bcode.substr(17,3) == "000"){
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-
-        if(reg1 == reg2){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4) +'0';
-        int imm = BinaryToInteger(binary_imm, 13);
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-    //bne
-    else if(bcode.substr(17,3) == "001"){
-
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-
-        if(reg2 != reg1){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4) +'0';
-        int imm = BinaryToInteger(binary_imm, 13);
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-    //bge
-    else if(bcode.substr(17,3) == "101"){
-
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-
-        if(reg2 <= reg1){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4) + '0';
-        int imm = BinaryToInteger(binary_imm, 13);
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-    //bgeu
-    else if(bcode.substr(17,3) == "111"){
-        int imm;
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-        if(reg1 < 0){
-            reg1 =  4294967296 + reg1;
-        }
-        if(reg2 < 0){
-            reg2 = 4294967296 + reg2;
-        }
-
-        if(reg1 >= reg2){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4)+ '0';
-        if(binary_imm[0] == '1'){
-            string new_dum = '0' + binary_imm.substr(1,12);
-            imm = BinaryToInteger(new_dum,13);
-            imm = 0 - imm;
-
-        }
-        else{
-            imm = BinaryToInteger(binary_imm, 13);
-
-        }
-        
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-    //blt
-    else if(bcode.substr(17,3) == "100"){
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-        if(reg2 > reg1){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4)+'0';
-        int imm = BinaryToInteger(binary_imm, 13);
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-    //bltu
-    else if(bcode.substr(17,3) == "110"){
-        int imm;
-        string dummy1 = '0' + bcode.substr(7,5);
-        int reg_no1 = BinaryToInteger(dummy1, 6);
-        int reg2 = register_map[register_add_map[reg_no1]];
-        string dummy2 = '0' + bcode.substr(12,5);
-        int reg_no2 = BinaryToInteger(dummy2, 6);
-        int reg1 = register_map[register_add_map[reg_no2]];
-
-        if(reg1 < 0){
-            reg1 =  4294967296 + reg1;
-        }
-        if(reg2 < 0){
-            reg2 = 4294967296 + reg2;
-        }
-
-        if(reg1 < reg2){
-        string binary_imm = bcode.substr(0,1) + bcode.substr(24,1)  + bcode.substr(1,6) + bcode.substr(20, 4)+'0';
-        int imm = BinaryToInteger(binary_imm, 13);
-        pc = pc + imm;
-        return;
-        }
-        else{
-            pc = pc + 4;
-        }
-        return;
-
-    }
-}
-
-void j_simu(string &bcode, map<string, long> &register_map,map<int, string> &register_add_map, int &pc){
-    string imm = bcode.substr(0,1)+ bcode.substr(12,8) + bcode.substr(11,1) + bcode.substr(1,10) + '0';
-    int imm_val = BinaryToInteger(imm, 21);
-    string dummy = '0' + bcode.substr(20,5);
-    int reg_no = BinaryToInteger(dummy, 6);
-
-    register_map[register_add_map[reg_no]] = pc + 4;
-    pc = pc + imm_val;
-    if(pc % 2 != 0){
-        pc = pc - 1;
-
-    }
-    return;
-
-}
-
-void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
-
-    string dummy2 = '0' + bcode.substr(7,5);
-    int reg_no2 = BinaryToInteger(dummy2, 6);
-    long reg2 = register_map[register_add_map[reg_no2]];
-
-    string dummy1 = '0' + bcode.substr(12,5);
-    int reg_no1 = BinaryToInteger(dummy1, 6);
-    long reg1 = register_map[register_add_map[reg_no2]];
-
-    string dummy3 = '0' + bcode.substr(20,5);
-    long reg_no3 = BinaryToInteger(dummy3, 6);
-    //register_map[register_add_map[reg_no3]];
-
-    if(bcode.substr(0,7)=="0000000" && bcode.substr(17,3) == "000"){
-       //  register_map[register_add_map[reg_no3]] = reg1 + reg2;
-        long ans = reg1 + reg2 ;
-        long long max = pow(2, 31) ; // max positive value of 32 bits with 2's complement 
-        if(ans >= max){
-            // overflow has occurred
-            ans = ans - max ;
-        }
-        register_map[register_add_map[reg_no3]] = ans ;
-        pc = pc + 4 ;         
-    }
-    else if(bcode.substr(0,7)=="0100000" && bcode.substr(17,3) == "000"){
-        register_map[register_add_map[reg_no3]] = reg1 - reg2;
-        pc = pc + 4;
-        
-    }
-    //sll
-    else if(bcode.substr(17,3) == "001"){
-         string binar_reg2 = decimalToBinary32(reg2);
-         string dummy1 = '0' + binar_reg2.substr(27,5);
-        int shift = BinaryToInteger(dummy1, 6);
-
-        string  binar_reg1= decimalToBinary32(reg1);
-        string new_reg1 = binar_reg1.substr(shift - 1, 32 - shift);
-        for(int i=0;i<shift;i++){
-            new_reg1= new_reg1 + '0';
-        }
-        long final = BinaryToInteger(new_reg1, 32);
-        register_map[register_add_map[reg_no3]] = final;
-
-        pc =pc+4;
-        cout<<pc;
-
-    }
-    //srl
-    else if(bcode.substr(17,3) == "101"){
-         string binar_reg2 = decimalToBinary32(reg2);
-         string dummy1 = '0' + binar_reg2.substr(27,5);
-        int shift = BinaryToInteger(dummy1, 6);
-
-        string  binar_reg1= decimalToBinary32(reg1);
-        string new_reg1 = binar_reg1.substr(0, 32 - shift);
-        for(int i=0;i<shift;i++){
-            new_reg1= '0'+ new_reg1;
-        }
-        long final = BinaryToInteger(new_reg1, 32);
-        register_map[register_add_map[reg_no3]] = final;
-
-        pc =pc+4;
-
-    }
-    //or
-    else if(bcode.substr(17,3) == "110"){
-        string reg1_bin = decimalToBinary32(reg1);
-        string reg2_bin = decimalToBinary32(reg2);
-        string new_reg_bin = bitwiseOr(reg1_bin,reg2_bin);
-        long reg_3_int = BinaryToInteger(new_reg_bin,32);
-        register_map[register_add_map[reg_no3]] = reg_3_int;
-
-        pc= pc + 4;
-
-
-    }
-    //and
-    else if(bcode.substr(17,3) == "110"){
-
-        string reg1_bin = decimalToBinary32(reg1);
-        string reg2_bin = decimalToBinary32(reg2);
-        string new_reg_bin = bitwiseand(reg1_bin,reg2_bin);
-        long reg_3_int = BinaryToInteger(new_reg_bin,32);
-        register_map[register_add_map[reg_no3]] = reg_3_int;
-        pc= pc +4 ;
-
-    }
-    //xor
-    else if(bcode.substr(17,3) == "110"){
-
-        string reg1_bin = decimalToBinary32(reg1);
-        string reg2_bin = decimalToBinary32(reg2);
-        string new_reg_bin = bitwisexor(reg1_bin,reg2_bin);
-        long reg_3_int = BinaryToInteger(new_reg_bin,32);
-        register_map[register_add_map[reg_no3]] = reg_3_int;
-        pc= pc + 4 ;
-
-    }
-    //slt
-    else if(bcode.substr(17,3) == "010"){
-        if(reg2>reg1){
-            register_map[register_add_map[reg_no3]] = 1;
-        }
-        pc = pc + 4;
-    }
-
-    //sltu
-    else if(bcode.substr(17,3) == "010"){
-
-        if(reg1 < 0){
-            reg1 =  4294967296+ reg1;
-        }
-        if(reg2 < 0){
-            reg2 = 4294967296+ reg2;
-        }
-        
-        if(reg2>reg1){
-            register_map[register_add_map[reg_no3]] = 1;
-        }
-        pc = pc + 4;
-    }
-    return;
-    
-}
-
-void s_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem){
-    if(bcode.substr(17,3) == "010"){
-        string imm_val = bcode.substr(0,7) + bcode.substr(20,5);
-        int imm = BinaryToInteger(imm_val,12);
-
-        string reg1 = '0' + bcode.substr(12,5);
-        int reg_no1 = BinaryToInteger(reg1, 6);
-
-        string reg2 = '0' + bcode.substr(7,5);
-        int reg_no2 = BinaryToInteger(reg2, 6);
-
-        long reg1_val = register_map[register_add_map[reg_no1]];
-        long hex_int_add = imm + reg1_val;
-        cout<<hex_int_add<<endl;;
-        string addfd= IntToHex32BitString(hex_int_add);
-        cout<<addfd<<endl;
-        cout<<register_map[register_add_map[reg_no2]]<<endl;
-        
-
-        string hex_add = "0x" + addfd;
-
-        program_mem[hex_add] = register_map[register_add_map[reg_no2]];
-        //cout<<pc<<endl;
-        pc= pc + 4;
-        //cout<<pc<<endl;
-
-    }
-    return;
-
-}
-
-void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
-    if(bcode.substr(25,7) == "0110111"){
-        string imm_val = bcode.substr(0,20) + "000000000000";
-        int imm = BinaryToInteger(imm_val,32);
-
-        string reg = '0' + bcode.substr(20,5);
-        int reg_add = BinaryToInteger(reg, 6);
-
-        int reg_fin_val =imm;
-        register_map[register_add_map[reg_add]] = reg_fin_val;
-        //cout<<pc;
-        pc = pc + 4; 
-
-    }
-    else if(bcode.substr(25,7) == "0010111"){
-        string imm_val = bcode.substr(0,20) + "000000000000";
-        cout<<imm_val<<endl;
-        int imm = BinaryToInteger(imm_val,32);
-        
-
-        string reg = '0' + bcode.substr(20,5);
-        int reg_add = BinaryToInteger(reg, 6);
-        //cout<<pc<<endl;
-
-        int reg_fin_val = (pc) +imm;
-        cout<<pc<<endl;
-        register_map[register_add_map[reg_add]] = reg_fin_val;
-        pc = pc + 4;
-
-    }
-
-    return;
-}
-
-void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc,map<string, int> &program_mem ){
-    // Given an I type string, this executes it, i.e. does the needed changes in PC and File registers.
-
-    string opcode = bcode.substr(25, 7) ;
-    string func3 = bcode.substr(17, 3) ;
-    string imm_binary = bcode.substr(0, 12) ; // bits of the immediate
-    //cout<<imm_binary<<endl;
-    int imm_val = BinaryToInteger(imm_binary, 12) ; // integer value of immediate, assuming 2's complement
-    //cout<<imm_val;
-
-    string rs_bin = bcode.substr(12, 5) ; // binary representation of rs1
-    string rs_fin = '0' + rs_bin;
-    int rs = BinaryToInteger(rs_fin, 6) ; /* this is the corresponding number of the 
-
-    register in the file registers. */
-    string rs_abi = register_add_map[rs] ; // abi of rs
-
-    string rd_bin = bcode.substr(20, 5) ; // same story now for rd
-    string rd_fin = '0' + rd_bin;
-    int rd = BinaryToInteger(rd_fin, 6) ; 
-    string rd_abi = register_add_map[rd] ; // abi of rd
-
-    
-    if(opcode == "0000011" && func3 == "010"){
-        // lw
-        string imm_val = bcode.substr(0,12);
-        int imm = BinaryToInteger(imm_val,12);
-
-        string reg1 = '0' + bcode.substr(12,5);
-        int reg_no1 = BinaryToInteger(reg1, 6);
-
-        string reg2 = '0' + bcode.substr(20,5);
-        int reg_no2 = BinaryToInteger(reg2, 6);
-        //cout<<imm;
-
-        long reg1_val = register_map[register_add_map[reg_no1]];
-        long hex_int_add = imm + reg1_val;
-    
-
-        string hex_add = "0x" + IntToHex32BitString(hex_int_add);
-    
-
-        register_map[register_add_map[reg_no2]] = program_mem[hex_add];
-        pc= pc + 4;
-    }
-    else if(opcode == "0010011" && func3 == "000"){
-        // addi
-        int ans ;
-        ans = register_map[rs_abi] + imm_val ;
-        
-        long long max = pow(2, 31) ; // max value of 32 bits with 2's complement 
-        if(ans >= max){
-            // overflow has occurred
-            ans = ans - max ;
-        }
-        register_map[rd_abi] = ans ;
-        //cout<<"here";
-        
-        pc=pc+4 ;
-    }
-    else if(opcode == "0010011" && func3 == "011"){
-        // sltiu
-        string binary_rs = decimalToBinary32(register_map[rs_abi]) ; // bin. repres. of the value of rs
-        string fin_bin_rs= '0'+binary_rs;
-        int unsigned_value_of_rs = BinaryToInteger(fin_bin_rs, 33) ; // unsigned value of binary_rs
-        string imm_bin_fin = '0' + imm_binary;
-        int unsigned_value_of_imm = BinaryToInteger(imm_bin_fin, 13) ; // unsigned value of imm
-
-        if(unsigned_value_of_rs < unsigned_value_of_imm){
-            register_map[rd_abi] = 1 ;
-        }
-        pc=pc+4 ;
-    }
-    else if(opcode == "1100111" && func3 == "000"){
-        // jalr
-        int return_addres = pc + 4 ; // the just next instruction
-        int address_to_go = register_map[rs_abi] + imm_val ;
-        if(address_to_go % 2 != 0){
-            // address_to_go is an odd number, so we'll decrease it by one.
-            address_to_go = address_to_go - 1 ;
-        }
-        register_map[rd_abi] = return_addres ; // save return address here.
-        pc = address_to_go ; // now go here
-    }
+    return binaryRepresentation.to_string();
 }
 
 
-void classifier(string & bcode,map<string, long> &register_map, map<int, string> &register_add_map, int & pc,map<string, int> &program_mem){
-    string opcode;
-    opcode = bcode.substr(25,7);
-    if(opcode == "0110011"){
-        r_simu(bcode,register_map,register_add_map,pc );
+string decimalToBinary12(int decimal){
+    bitset<12> binaryRepresentation;
+    if(decimal <0){
+        // Calculate the two's complement
+        int positiveEquivalent = 4096 + decimal; // 2^12
+        binaryRepresentation = bitset<12>(decimal);
+    } 
+    else{
+        // Positive number: directly convert to binary
+        binaryRepresentation = bitset<12>(decimal);
     }
-    else if(opcode == "0000011" || opcode == "0010011" || opcode == "1100111"){
-        i_simu(bcode,register_map,register_add_map,pc,program_mem );
+    return binaryRepresentation.to_string();
+}
 
-    }
-    else if(opcode == "0100011"){
-        s_simu(bcode, register_map, register_add_map,pc , program_mem);
-        
 
-    }
-    else if(opcode == "1100011"){
-        b_simu(bcode, register_map, register_add_map, pc );
+bool containsVirHalt(string& filename,regex& regexPattern){
+    // Input file stream for reading from the input file
+    ifstream inputFile(filename);
 
-    }
-    else if(opcode == "0110111" || opcode == "0010111"){
-        u_simu(bcode, register_map, register_add_map, pc );
-
+    // Check if the input file is open
+    if(!inputFile.is_open()){
+        cerr<< "Error opening input file.\n";
+        return false;
     }
 
-    else if(opcode == "1101111"){
-        j_simu(bcode, register_map, register_add_map, pc );
+    string line;
+    bool patternFound = false;
+
+    while(getline(inputFile,line)){
+        // Check if the line matches the specified regex pattern
+        if(regex_search(line, regexPattern)){
+            patternFound = true;
+            inputFile.close();
+            break;  // Stop searching once the pattern is found
+        }
+    }
+
+    // Close the input file
+    inputFile.close();
+
+    return patternFound;
+}
+
+string b_assembler(string &line, unordered_map<string,string> &reg_map, int program_counter,unordered_map <string , int> label_map ){
+    unordered_map <string, string> opcode_bi_rep;
+
+    opcode_bi_rep["beq"] = "1100011";
+    opcode_bi_rep["bne"] = "1100011";
+    opcode_bi_rep["blt"] = "1100011";
+    opcode_bi_rep["bge"] = "1100011";
+    opcode_bi_rep["bltu"] = "1100011";
+    opcode_bi_rep["bgeu"] = "1100011";
+
+    unordered_map <string, string> funct3;
+
+    funct3["beq"] = "000";
+    funct3["bne"] = "001";
+    funct3["blt"] = "100";
+    funct3["bge"] = "101";
+    funct3["bltu"] = "110";
+    funct3["bgeu"] = "111";
+
+    regex instruc("\\s*(beq|bne|blt|bge|bltu|bgeu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+
+    smatch match;
+    regex_match(line, match, instruc);
+    string last_arg = match[4];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match[4]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab- pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary16(imm);
     }
     else{
-        pc=pc+4;
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary16(imm);
+    }
+   
+    string regs1 = reg_map[match[2]];
+    string regs2 = reg_map[match[3]];
+    string opcod = opcode_bi_rep[match[1]];
+    string fu3 = funct3[match[1]];
+    //cout<<imm_bin_code;
+
+    char temp11 = imm_bin_code[4];
+    string imm11(1,temp11);
+    string imm41 = imm_bin_code.substr(11,4);
+    char temp12 = imm_bin_code[3];
+    string imm12(1,temp12);
+    string imm510 = imm_bin_code.substr(5,6);
+
+    string out = imm12 + imm510 + regs2 + regs1 + fu3 + imm41 + imm11 + opcod;
+    return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        string imm_bin_code;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary16(imm);
+        //cout<<imm_bin_code<<endl;
+        string regs1 = reg_map[match[2]];
+        string regs2 = reg_map[match[3]];
+        string opcod = opcode_bi_rep[match[1]];
+        string fu3 = funct3[match[1]];
+    
+        char temp11 = imm_bin_code[4];
+        string imm11(1,temp11);
+        string imm41 = imm_bin_code.substr(11,4);
+        char temp12 = imm_bin_code[3];
+        string imm12(1,temp12);
+        string imm510 = imm_bin_code.substr(5,6);
+    
+        string out = imm12 + imm510 + regs2 + regs1 + fu3 + imm41 + imm11 + opcod;
+        return out;
+
+    }
+    //return out;
+}
+
+string j_assembler(string &line, unordered_map<string,string> &reg_map, int &program_counter,unordered_map <string , int> &label_map){
+    regex instruc1("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    regex instruc2("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match1;
+    smatch match2;
+    if(regex_match(line, match1, instruc1)){
+    string last_arg = match1[3];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match1[3]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab - pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //cout<<imm<<endl;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary32(imm);
+    }
+    else{
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+    }
+    //cout<< imm_bin_code<<endl;
+    string regs = reg_map[match1[2]];
+    string opcod = "1101111";
+    //cout<<imm_bin_code;
+
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        if(imm >= -1048576 && imm<= 1048575){
+        string imm_bin_code;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+        //cout<<imm_bin_code<<endl;
+        //cout<<imm_bin_code<<endl;
+        string regs = reg_map[match1[2]];
+        string opcod = "1101111";
+
+        //cout<<imm_bin_code;
+    
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+        }
+        else{
+            cerr<<"Immediate out of range";
+            exit(1);
+        }
+
+    }
+    }
+    else if(regex_match(line, match2, instruc2)){
+    string last_arg = match2[3];
+    if(keyExists(label_map,last_arg)){
+    //cout<<match[4];
+    int lab = label_map[match2[3]];
+    int pc = program_counter;
+    //cout<<pc<<" "<<lab;
+    int sub = lab - pc;
+    //cout<<sub;
+    int imm = 4*sub ;
+    //cout<<imm<<endl;
+    //out<<imm;
+    string imm_bin_code;
+    if(imm >= 0){
+         imm_bin_code = decimalToBinary32(imm);
+    }
+    else{
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+    }
+    //cout<< imm_bin_code<<endl;
+    string regs = reg_map[match2[2]];
+    string opcod = "1101111";
+    //cout<<imm_bin_code;
+
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+    }
+    else if(is_number(last_arg)){
+        int imm =stoi(last_arg);
+        if(imm >= 1048576 && imm <=1048575){
+        string imm_bin_code;
+    
+    
+        //int positiveEquivalent = 4096 + imm; // 2^12
+        imm_bin_code = decimalToBinary32(imm);
+        //cout<<imm_bin_code<<endl;
+        //cout<<imm_bin_code<<endl;
+        string regs = reg_map[match2[2]];
+        string opcod = "1101111";
+
+        //cout<<imm_bin_code;
+    
+        char temp20 = imm_bin_code[11];
+        string imm20(1,temp20);
+        string imm1912 = imm_bin_code.substr(12,8);
+        char temp11 = imm_bin_code[20];
+        string imm11(1,temp11);
+        string imm110 = imm_bin_code.substr(21,10);
+    
+        string out = imm20 + imm110 + imm11 + imm1912 +  regs+opcod;
+        return out;
+        }
+        else{
+            cerr<<"Immediate out of range";
+            exit(1);
+        }
+
+    }
+    }
+}
+
+string i_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    std::unordered_map<std::string, std::string> opcode_bi_rep;
+    opcode_bi_rep["lw"] = "0000011";
+    opcode_bi_rep["addi"] = "0010011";
+    opcode_bi_rep["sltiu"] = "0010011";
+    opcode_bi_rep["jalr"] = "1100111";
+
+    unordered_map <string, string> funct3_bi_rep;
+    funct3_bi_rep["lw"] = "010";
+    funct3_bi_rep["addi"] = "000";
+    funct3_bi_rep["sltiu"] = "011";
+    funct3_bi_rep["jalr"] = "000";
+    
+    regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match1;
+    smatch match2;
+    smatch match3;
+    if(regex_match(line, match1, instruc2)){
+
+        int imm = stoi(match1[4]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match1[1]];
+            string regd = reg_map[match1[2]];
+            string brac_reg = reg_map[match1[3]];
+            string fun3 = funct3_bi_rep[match1[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+
+            // Construct the output binary code
+            string output_bicode = immBinary + brac_reg+ fun3 + regd + opcode_bi;
+
+            return output_bicode;        
+    }
+    else if(regex_match(line, match2, instruc1)){
+        //int imm = stoi(match2[4]);
+        string imm_str = match2[3];
+        imm_str.erase(std::remove(imm_str.begin(), imm_str.end(), '('), imm_str.end());
+        imm_str.erase(std::remove(imm_str.begin(), imm_str.end(), ')'), imm_str.end());
+
+        int imm = stoi(imm_str);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match2[1]];
+            string regd = reg_map[match2[2]];
+            string regs = reg_map[match2[4]];
+            string fun3= funct3_bi_rep[match2[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+            // Construct the output binary code
+            string output_bicode = immBinary + regs + fun3 + regd + opcode_bi;
+
+            return output_bicode;
+    }
+    else if(regex_match(line, match3, instruc3)){
+        int imm = stoi(match3[4]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match3[1]];
+            string regd = reg_map[match3[2]];
+            string regs = reg_map[match3[3]];
+            string fun3= funct3_bi_rep[match3[1]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary12(imm);
+    
+            // Construct the output binary code
+            string output_bicode = immBinary + regs + fun3 + regd + opcode_bi;
+
+            return output_bicode;
+    }
+}
+
+string u_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    std::unordered_map<std::string, std::string> opcode_bi_rep;
+    opcode_bi_rep["lui"] = "0110111";
+    opcode_bi_rep["auipc"] = "0010111";
+
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match;
+    if(regex_match(line, match, instructions)){
+        int imm = stoi(match[3]);
+        //cout<<imm<<endl;
+        
+            string opcode_bi = opcode_bi_rep[match[1]];
+            string regd = reg_map[match[2]];
+            
+            // Convert immediate value to 32-bit 2's complement
+            string immBinary = decimalToBinary32(imm);
+            //cout<< immBinary<<endl;;
+            string final_im = immBinary.substr(0,20);
+            //cout<<final_im;
+
+            // Construct the output binary code
+            string output_bicode = final_im + regd + opcode_bi;
+
+            return output_bicode;        
+    }
+    
+}
+string s_assembler(string& line, unordered_map<string,string> &reg_map){
+
+    regex instRegex("\\s*(sw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+
+    smatch match;
+    if(regex_match(line, match,instRegex)){
+    string op_code = "0100011";
+    string imm_string = match[3] ;
+    int imm = stoi(imm_string);
+    //cout<<imm;
+
+    string imm_bin_code;
+    imm_bin_code = decimalToBinary12(imm);
+    //cout<< imm_bin_code<<endl;
+    string fun3 = "010";
+    string regs2 = reg_map[match[2]];
+    string regs1 = reg_map[match[4]];
+    string imm04 = imm_bin_code.substr(7,5);
+    string imm511 = imm_bin_code.substr(0,7);
+
+    string out = imm511 + regs2 + regs2 + fun3 + imm04 + op_code;
+    return out;
     }
 
+}
+
+string r_assembler(string & line, unordered_map<string, string> & reg_map){
+    unordered_map <string, string> opcode_bi_rep;
+
+    opcode_bi_rep["add"] = "0110011";
+    opcode_bi_rep["sub"] = "0110011";
+    opcode_bi_rep["sll"] = "0110011";
+    opcode_bi_rep["slt"] = "0110011";
+    opcode_bi_rep["sltu"] = "0110011";
+    opcode_bi_rep["xor"] = "0110011";
+    opcode_bi_rep["srl"] = "0110011";
+    opcode_bi_rep["or"] = "0110011";
+    opcode_bi_rep["and"] = "0110011";
+
+    unordered_map <string, string> funct3_bi_rep;
+    funct3_bi_rep["add"] = "000";
+    funct3_bi_rep["sub"] = "000";
+    funct3_bi_rep["sll"] = "001";
+    funct3_bi_rep["slt"] = "010";
+    funct3_bi_rep["sltu"] = "011";
+    funct3_bi_rep["xor"] = "100";
+    funct3_bi_rep["srl"] = "101";
+    funct3_bi_rep["or"] = "110";
+    funct3_bi_rep["and"] = "111";
+
+
+    regex instru("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(zero|ra|sp|gp|tp|t[0-6]|s10|s11|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s10|s11|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+
+    smatch match;
+    
+    regex_match(line,match, instru);
+    string regd = reg_map[match[2]];
+    string regs1 = reg_map[match[3]];
+    string regs2 = reg_map[match[4]];
+    string fun3_bicode = funct3_bi_rep[match[1]] ; 
+    string opcode_bi = opcode_bi_rep[match[1]] ;
+    string output_bi_code;
+    if(match[1] != "sub"){
+        //change
+        output_bi_code = "0000000" + regs2 + regs1 + fun3_bicode + regd + opcode_bi;
+    }
+    else{
+        //change
+        output_bi_code = "0100000" + regs2 + regs1 + fun3_bicode + regd + opcode_bi;
+    }
+    
+    
+    return output_bi_code;
+    
+}
+
+bool is_iinstruction(string &line){
+    
+    regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+
+    smatch match1;
+    smatch match2;
+    smatch match3;
+
+    if(regex_match(line, match1, instruc1)){
+        int first1 = stoi(match1[3]);
+        //cout<<"lw";
+        if(first1 <= 2047 && first1 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
+    }    
+    else if(regex_match(line, match2, instruc2)){
+        int first2 = stoi(match2[4]);
+        //cout<<"addi";
+        if(first2 <= 2047 && first2 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
+    }
+    else if(regex_match(line, match3, instruc3)){
+        int first3 = stoi(match3[4]);
+        //cout<<"jalr";
+        if(first3 <= 2047 && first3 >= -2048){
+            return true;
+        }
+        else{
+            cout<<"Immediate out of range";
+            exit(1);
+        }
+    }
+
+    return false;
+}
+
+bool is_binstruction(string& line, unordered_map<string,int> label_map){
+
+    regex instruc("\\s*(beq|bne|blt|bge|bltu|bgeu)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    smatch match;
+    if(regex_match(line,match,instruc)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+        string last_arg = match[4];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+            return true;
+        }
+    
+    }
+    return false;
+   
+}
+
+bool is_sinstruction(string& line){
+    string low_line = line;
+    //transform(low_line.begin(), low_line.end(), low_line.begin(), ::tolower);
+
+    //  S-type instruction format
+    regex instRegex("\\s*(sw)\\s+(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|ra|sp|gp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match;
+
+    if(regex_match(low_line, match,instRegex)){
+        int first1 = stoi(match[3]);
+        if(first1>=-2048 && first1  <= 2047){
+            return true;
+        }
+        cout<<"Immediate out of range";
+        exit(1);
+
+    }
+    else{
+        return false;
+    }
+
+}
+    
+bool is_uinstruction(string &line){
+    string low_line = line;
+    regex instructions("\\s*(auipc|lui)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
+    smatch match;
+    // /bool a = regex_search(low_line, instructions);
+    // /regex_match(low_line,match,instructions);
+    //cout<<match[3];
+    // /cout<<a;
+
+    if(regex_match(low_line,match,instructions)){     
+        int imm = stoi(match[3]);
+          // Convert matched string to integer
+        if(imm >= -2147483648 && imm <= 2147483647){
+            return true;
+        } 
+        else{
+            cout<<"Immediate out of range";
+        exit(1);
+        }
+    }
+    return false;
+}
+
+bool is_rinstruction(string& line){
+    
+    regex instRegex("\\s*(add|sub|slt|sltu|xor|sll|srl|or|and)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+    smatch match;
+    if(regex_match(line,match,instRegex)){
+        //cout<<"is r";
+        return true;
+    } 
+    else{
+        //cout<<"is not r";
+        return false;
+    }
+}
+
+bool is_jinstruction(string &line, unordered_map<string,int> label_map){
+    regex instruc2("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*\\(\\s*(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
+    smatch match2;
+    regex instruc1("\\s*(jal)\\s+(zero|gp|ra|sp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\b\\w+\\b)\\s*");
+    smatch match1;
+ 
+    if(regex_match(line,match1,instruc1)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+
+        string last_arg = match1[3];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+            return true;
+        }
+
+        return false;
+    
+    }
+    else if(regex_match(line,match2,instruc2)){
+        //if(keyExists(label_map,match[4] )){
+        //    return true;
+        //}
+
+        string last_arg = match2[3];
+        if(keyExists(label_map,last_arg) || is_number(last_arg)){
+
+        }
+
+        return false;
+
+    }
+
+    return false;
+
+}
+
+
+bool is_label(string& line){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+
+    if(regex_search(line, pattern)){
+
+        return true;
+    }
+    return false;
+}
+////change
+string label_instruc_extrac(string &line , unordered_map <string , int> &label_map){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+    smatch match;
+    string out;
+    
+    regex_match(line, match, pattern);
+
+    
+        out = match[2];
+        //cout<<out;
+        
+        return out;
+}
+////change
+string label_name_extrac(string &line , unordered_map <string , int> &label_map){
+    regex pattern("\\s*(\\S+):\\s*(.*?)\\s*$");
+    smatch match;
+    string out;
+    
+    if( regex_match(line, match ,pattern)){
+        out = match[1];
+        //cout<<out;
+
+        return out;
+    }
+
+}
+
+string halt_assembler(string& line ){
+    string bin_code = "00000000000000000000000001100011";
+    return bin_code;
+
+}
+bool is_haltinstruc(string&line, unordered_map<string,string> &reg_map){
+    regex hal("\\s*beq\\s+zero\\s*,\\s*zero\\s*,\\s*0\\s*");
+    smatch match;
+    if(regex_match(line,match, hal)){
+        return true;
+    }
+}
+
+
+string classifier(string &line, unordered_map<string,string> &reg_map,int &program_counter,unordered_map<string,int> &label_map){
+    //cout<<is_label(line);
+    if(is_label(line)){
+        string extra = label_instruc_extrac(line, label_map);
+      
+        //program_counter+=1;
+
+        return classifier(extra, reg_map, program_counter, label_map);
+        
+    }
+    else{
+
+        if(is_rinstruction(line)){
+            program_counter+=1;
+            //cout<<"is r type instruc \n";
+            string fina=r_assembler(line, reg_map);
+            //cout<<fina<<endl;
+            return fina;
+        }
+        else if(is_haltinstruc(line,reg_map)){
+            program_counter+=1;
+            return halt_assembler(line);
+        }
+    
+        else if(is_binstruction(line, label_map)){
+            program_counter+=1;
+            return b_assembler(line,reg_map,program_counter,label_map);
+        }
+        else if(is_uinstruction(line)){
+            program_counter+=1;
+            return u_assembler(line,reg_map);
+        }
+        else if(is_iinstruction(line)){
+            program_counter+=1;
+            return i_assembler(line,reg_map);
+        }
+        else if(is_sinstruction(line)){
+            program_counter+=1;
+            return s_assembler(line,reg_map);
+        }
+        else if(is_jinstruction(line,label_map)){
+            program_counter+=1;
+            return j_assembler(line,reg_map,program_counter,label_map);
+        }
+     
+        else{
+        //cout<< "invalid syntax";
+        //cout << "is not r type instruc \n";
+        //program_counter+=1;
+        cerr<<"Invalid Syntax at line "<<program_counter+2;
+        exit(1);
+        return "Invalid Syntax";
+    }
+    }
+
+}
+bool adress_label(string &line, unordered_map<string,string> &reg_map,int &program_counter1,  unordered_map <string , int> &label_map){
+    if(is_label(line)){
+        //cout<<"is label"<<endl;
+        string extrac = label_instruc_extrac(line, label_map);
+        string label_name = label_name_extrac(line, label_map);
+
+        program_counter1+=1;
+        label_map[label_name] = program_counter1;
+
+            //cout<<"adrees label";
+            //cout<<"Invalid Syntax at line "<<program_counter1 + 1;
+            //exit(1);
+        return true;
+            
+    }
+    else{
+        
+        
+        program_counter1+=1;
+        return false;
+
+    }
 }
 
 int main(){
+    int program_counter1 = -1;
+    int program_counter = -1;
 
-    map<string, long> register_map;
+    unordered_map<string, string> register_map;
 
-    register_map["zero"] = 0;
-    register_map["ra"] = 0;
-    register_map["sp"] = 256;
-    register_map["gp"] = 0;
-    register_map["tp"] = 0;
-    register_map["t0"] = 0;
-    register_map["t1"] = 0;
-    register_map["t2"] = 0;
-    register_map["s0"] = 0;
-    register_map["fp"] = 0;
-    register_map["s1"] = 0;
-    register_map["a0"] = 0;
-    register_map["a1"] = 0;
-    register_map["a2"] = 0;
-    register_map["a3"] = 0;
-    register_map["a4"] = 0;
-    register_map["a5"] = 0;
-    register_map["a6"] = 0;
-    register_map["a7"] = 0;
-    register_map["s2"] = 0;
-    register_map["s3"] = 0;
-    register_map["s4"] = 0;
-    register_map["s5"] = 0;
-    register_map["s6"] = 0;
-    register_map["s7"] = 0;
-    register_map["s8"] = 0;
-    register_map["s9"] = 0;
-    register_map["s10"] = 0;
-    register_map["s11"] = 0;
-    register_map["t3"] = 0;
-    register_map["t4"] = 0;
-    register_map["t5"] = 0;
-    register_map["t6"] = 0;
+    register_map["zero"] = "00000";
+    register_map["ra"] = "00001";
+    register_map["sp"] = "00010";
+    register_map["gp"] = "00011";
+    register_map["tp"] = "00100";
+    register_map["t0"] = "00101";
+    register_map["t1"] = "00110";
+    register_map["t2"] = "00111";
+    register_map["s0"] = "01000";
+    register_map["fp"] = "01000";
+    register_map["s1"] = "01001";
+    register_map["a0"] = "01010";
+    register_map["a1"] = "01011";
+    register_map["a2"] = "01100";
+    register_map["a3"] = "01101";
+    register_map["a4"] = "01110";
+    register_map["a5"] = "01111";
+    register_map["a6"] = "10000";
+    register_map["a7"] = "10001";
+    register_map["s2"] = "10010";
+    register_map["s3"] = "10011";
+    register_map["s4"] = "10100";
+    register_map["s5"] = "10101";
+    register_map["s6"] = "10110";
+    register_map["s7"] = "10111";
+    register_map["s8"] = "11000";
+    register_map["s9"] = "11001";
+    register_map["s10"] = "11010";
+    register_map["s11"] = "11011";
+    register_map["t3"] = "11100";
+    register_map["t4"] = "11101";
+    register_map["t5"] = "11110";
+    register_map["t6"] = "11111";
 
-    map<int, string> register_add_map;
+    regex Vir_halt("\\s*beq\\s+zero\\s*,\\s*zero\\s*,\\s*0\\s*");
+    string Ifilename= "inp.txt";
+    string line1;
+    ifstream input_file("inp.txt");
+    //ofstream output_file("");
 
-    register_add_map[0] = "zero";
-    register_add_map[1] = "ra";
-    register_add_map[2] = "sp";
-    register_add_map[3] = "gp";
-    register_add_map[4] = "tp";
-    register_add_map[5] = "t0";
-    register_add_map[6] = "t1";
-    register_add_map[7] = "t2";
-    register_add_map[8] = "s0";
-    register_add_map[8] = "fp";
-    register_add_map[9] = "s1";
-    register_add_map[11] = "a1";
-    register_add_map[12] = "a2";
-    register_add_map[13] = "a3";
-    register_add_map[10] = "a0";
-    register_add_map[14] = "a4";
-    register_add_map[15] = "a5";
-    register_add_map[16] = "a6";
-    register_add_map[17] = "a7";
-    register_add_map[18] = "s2";
-    register_add_map[19] = "s3";
-    register_add_map[20] = "s4";
-    register_add_map[21] = "s5";
-    register_add_map[22] = "s6";
-    register_add_map[23] = "s7";
-    register_add_map[24] = "s8";
-    register_add_map[25] = "s9";
-    register_add_map[26] = "s10";
-    register_add_map[27] = "s11";
-    register_add_map[28] = "t3";
-    register_add_map[29] = "t4";
-    register_add_map[30] = "t5";
-    register_add_map[31] = "t6";
-
-    map<string, int> program_mem;
-
-    program_mem["0x00010000"] = 0;
-    program_mem["0x00010004"] = 0;
-    program_mem["0x00010008"] = 0;
-    program_mem["0x0001000c"] = 0;
-    program_mem["0x00010010"] = 0;
-    program_mem["0x00010014"] = 0;
-    program_mem["0x00010018"] = 0;
-    program_mem["0x0001001c"] = 0;
-    program_mem["0x00010020"] = 0;
-    program_mem["0x00010024"] = 0;
-    program_mem["0x00010028"] = 0;
-    program_mem["0x0001002c"] = 0;
-    program_mem["0x00010030"] = 0;
-    program_mem["0x00010034"] = 0;
-    program_mem["0x00010038"] = 0;
-    program_mem["0x0001003c"] = 0;
-    program_mem["0x00010040"] = 0;
-    program_mem["0x00010044"] = 0;
-    program_mem["0x00010048"] = 0;
-    program_mem["0x0001004c"] = 0;
-    program_mem["0x00010050"] = 0;
-    program_mem["0x00010054"] = 0;
-    program_mem["0x00010058"] = 0;
-    program_mem["0x0001005c"] = 0;
-    program_mem["0x00010060"] = 0;
-    program_mem["0x00010064"] = 0;
-    program_mem["0x00010068"] = 0;
-    program_mem["0x0001006c"] = 0;
-    program_mem["0x00010070"] = 0;
-    program_mem["0x00010074"] = 0;
-    program_mem["0x00010078"] = 0;
-    program_mem["0x0001007c"] = 0;
-
-
-    
-
-int pc = 0;
-map <int, string> instruction;
-int total = -1;
-
-
-ifstream input_file("inp.txt");
-ofstream output_file("out.txt");
-
-string line;
-
-while(getline(input_file, line)){
-    if(!line.empty() ){
-        total++;
-        instruction[total] = line;
-    }
-}
-
-while(pc/4 <= total){
-
-    if(instruction[(pc/4)] == "00000000000000000000000001100011"){
-
-        if(output_file.is_open()){
-            string pc_bin = "0b" + decimalToBinary32(pc);
-            output_file << pc_bin << " ";
-        
-            for(int i = 0; i< 32;i++){
-                string reg_bin = "0b" + decimalToBinary32(register_map[register_add_map[i]]);
-                output_file<< reg_bin <<" ";   
+  
+    //ofstream output_file("");
+    unordered_map<string,int> label_map;
+    while(getline(input_file, line1)){
+        if(!line1.empty()){
+            if(adress_label(line1, register_map, program_counter1, label_map)){
+                int a = 2;
             }
-            output_file<<endl;
+            else{
+                continue;
+            }
         }
-        break;
+
+        
+    }
+    //label_map["start"] = 2;
+    input_file.close();
+  
+    
+   
+    ifstream inputfile("inp.txt");
+    ofstream output_file("out.txt");
+
+
+    string line;
+    //checks for 3rd error condition
+    if(!containsVirHalt(Ifilename, Vir_halt)){
+        cerr << "Missing halt instruction in input file"; 
+        exit(1);
     }
     else{
-        classifier(instruction[pc/4],register_map,register_add_map,pc,program_mem);
         
-        if(output_file.is_open()){
-        string pc_bin = "0b" + decimalToBinary32(pc);
-        output_file << pc_bin << " ";
-        string reg_bin;
-        int b;
+        if(inputfile.is_open()){
+            if(checkLastLine(Ifilename, Vir_halt)){
+                while(getline(inputfile, line)){
+                    if(!line.empty()){
+                        string result = classifier(line, register_map, program_counter,label_map);
+                        if(result != "Invalid Syntax"){
+                           output_file<<result<<endl;; 
+                        }
+                        else{
+                            program_counter++;
+                            cerr<< result<<" at line "<<program_counter;
+                            exit(1);
+
+                        }
     
-        for(int i = 0; i< 32;i++){
-            b = register_map[register_add_map[i]];
-            reg_bin = "0b" + decimalToBinary32(b);
-            output_file<< reg_bin <<" ";   
+                    }
+                }
+                output_file.close();
+            }
+            else{
+                cerr<< "No Virtual Halt at end of input instructions";
+                exit(1);
+            }
+    
         }
-        output_file<<endl;
+        else{
+            cerr<< "error in opening file";
+            exit(1);
+        }
     }
-        
-    }
-    
-}
-cout<<program_mem["0x00010000"]<<endl;
-output_file <<"0x00010000:" << "0b" << decimalToBinary32(program_mem["0x00010000"]) << endl;
-output_file <<"0x00010004:" << "0b" << decimalToBinary32(program_mem["0x00010004"]) << endl;
-output_file <<"0x00010008:" << "0b" << decimalToBinary32(program_mem["0x00010008"]) << endl;
-output_file <<"0x0001000c:" << "0b" << decimalToBinary32(program_mem["0x0001000c"]) << endl;
-output_file <<"0x00010010:" << "0b" << decimalToBinary32(program_mem["0x00010010"]) << endl;
-output_file <<"0x00010014:" << "0b" << decimalToBinary32(program_mem["0x00010014"]) << endl;
-output_file <<"0x00010018:" << "0b" << decimalToBinary32(program_mem["0x00010018"]) << endl;
-output_file <<"0x0001001c:" << "0b" << decimalToBinary32(program_mem["0x0001001c"]) << endl;
-output_file <<"0x00010020:" << "0b" << decimalToBinary32(program_mem["0x00010020"]) << endl;
-output_file <<"0x00010024:" << "0b" << decimalToBinary32(program_mem["0x00010024"]) << endl;
-output_file <<"0x00010028:" << "0b" << decimalToBinary32(program_mem["0x00010028"]) << endl;
-output_file <<"0x0001002c:" << "0b" << decimalToBinary32(program_mem["0x0001002c"]) << endl;
-output_file <<"0x00010030:" << "0b" << decimalToBinary32(program_mem["0x00010030"]) << endl;
-output_file <<"0x00010034:" << "0b" << decimalToBinary32(program_mem["0x00010034"]) << endl;
-output_file <<"0x00010038:" << "0b" << decimalToBinary32(program_mem["0x00010038"]) << endl;
-output_file <<"0x0001003c:" << "0b" << decimalToBinary32(program_mem["0x0001003c"]) << endl;
-output_file <<"0x00010040:" << "0b" << decimalToBinary32(program_mem["0x00010040"]) << endl;
-output_file <<"0x00010044:" << "0b" << decimalToBinary32(program_mem["0x00010044"]) << endl;
-output_file <<"0x00010048:" << "0b" << decimalToBinary32(program_mem["0x00010048"]) << endl;
-output_file <<"0x0001004c:" << "0b" << decimalToBinary32(program_mem["0x0001004c"]) << endl;
-output_file <<"0x00010050:" << "0b" << decimalToBinary32(program_mem["0x00010050"]) << endl;
-output_file <<"0x00010054:" << "0b" << decimalToBinary32(program_mem["0x00010054"]) << endl;
-output_file <<"0x00010058:" << "0b" << decimalToBinary32(program_mem["0x00010058"]) << endl;
-output_file <<"0x0001005c:" << "0b" << decimalToBinary32(program_mem["0x0001005c"]) << endl;
-output_file <<"0x00010060:" << "0b" << decimalToBinary32(program_mem["0x00010060"]) << endl;
-output_file <<"0x00010064:" << "0b" << decimalToBinary32(program_mem["0x00010064"]) << endl;
-output_file <<"0x00010068:" << "0b" << decimalToBinary32(program_mem["0x00010068"]) << endl;
-output_file <<"0x0001006c:" << "0b" << decimalToBinary32(program_mem["0x0001006c"]) << endl;
-output_file <<"0x00010070:" << "0b" << decimalToBinary32(program_mem["0x00010070"]) << endl;
-output_file <<"0x00010074:" << "0b" << decimalToBinary32(program_mem["0x00010074"]) << endl;
-output_file <<"0x00010078:" << "0b" << decimalToBinary32(program_mem["0x00010078"]) << endl;
-output_file <<"0x0001007c:" << "0b" << decimalToBinary32(program_mem["0x0001007c"]) << endl;
-output_file.close();
-cout<<pc;
+    inputfile.close();
 
     return 0;
 }
