@@ -84,9 +84,7 @@ string IntToHex32BitString(int value){
 
     // Convert the hexadecimal string to uppercase
     std::string hex_str = ss.str();
-    for (char& c : hex_str) {
-        c = toupper(c);
-    }
+    
 
     // Return the formatted hexadecimal string
     return hex_str;
@@ -452,7 +450,7 @@ void s_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         string hex_add = "0x" + addfd;
 
         program_mem[hex_add] = register_map[register_add_map[reg_no2]];
-        cout<<pc<<endl;
+        //cout<<pc<<endl;
         pc= pc + 4;
         //cout<<pc<<endl;
 
@@ -485,8 +483,8 @@ void u_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         int reg_add = BinaryToInteger(reg, 6);
         //cout<<pc<<endl;
 
-        int reg_fin_val = (pc +4) +imm;
-        //cout<<pc<<endl;
+        int reg_fin_val = (pc) +imm;
+        cout<<pc<<endl;
         register_map[register_add_map[reg_add]] = reg_fin_val;
         pc = pc + 4;
 
