@@ -580,6 +580,103 @@ void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 }
 
 
+void bonus_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
+    string opcode = bcode.substr(25, 7) ;
+    string func3 = bcode.substr(17, 3) ;
+
+    string rs_bin = bcode.substr(12, 5) ; // binary representation of rs1
+    string rs_fin = '0' + rs_bin;
+    int rs = BinaryToInteger(rs_fin, 6) ; /* this is the corresponding number of the 
+    register in the file registers. */
+    string rs_abi = register_add_map[rs] ; // abi of rs
+
+    string rd_bin = bcode.substr(20, 5) ; // same story now for rd
+    string rd_fin = '0' + rd_bin;
+    int rd = BinaryToInteger(rd_fin, 6) ; 
+    string rd_abi = register_add_map[rd] ; // abi of rd
+
+    if(opcode == "1111110" && func3 == "000"){
+        // rst
+        for(int i = 1; i < 32; i++){ // Don't reset x0, it's always 0.
+            string reg_abi = register_add_map[i] ;
+            register_map[reg_abi] = 0 ;
+        }
+        pc = pc + 4 ;
+    }
+    else if(opcode == "1111110" && func3 == "001"){
+        // rvrs
+        string bin_of_rs = decimalToBinary32(register_map[rs_abi]) ;
+        string rev_ans = "" ;
+        for(int i = 31; i >= 0; i--){
+            rev_ans = rev_ans + bin_of_rs[i] ;
+        }
+        long long_int_of_rev_ans = BinaryToInteger(rev_ans, 32) ;
+        register_map[rd_abi] = long_int_of_rev_ans ;
+        pc = pc + 4 ;
+    }
+    else if(opcode == "1111110" && func3 == "010"){
+        // mul
+        string rs2_bin = bcode.substr(12, 5) ;
+        string rs2_fin = '0' + rs2_bin ;
+        int rs2 = BinaryToInteger(rs2_fin, 6) ; // corresp. no of rs2 in file registers
+        string rs2_abi = register_add_map[rs2] ;
+
+        long num1 = register_map[rs2_abi] ; 
+        long num2 = register_map[rs_abi] ;
+        // we'll add num1 , to itself, num2 times
+        bool negative = false ;
+        if( num1 < 0 && num2 >= 0){
+            negative = true ;
+        }
+        else if( num1 >= 0 && num2 < 0){
+            negative = true ;
+        }
+        else if(num1 == 0 || num2 == 0){
+            // rd =  0
+        }
+        long ans = 0 ;
+        if(negative == false){
+            // mul two +ve numbers only
+            num1 = abs(num1) ; num2 = abs(num2) ; 
+            for(long i = 0; i < num2; i++){
+                ans = ans + num1 ;
+                long long max = pow(2, 31) ; // max value of 32 bits with 2's complement 
+                if(ans >= max){
+                    // overflow has occurred
+                    ans = ans - max ;
+                }
+            }
+        }
+        else if(negative == true){
+            // negative nos.
+            long iterator ;
+            long num_to_sub ;
+            if(num1 < 0){
+                iterator =  num1 ;
+                num_to_sub = num2 ;
+            }
+            else{
+                iterator = num2 ;
+                num_to_sub = num1 ;
+            }
+            // repeated sub
+            num_to_sub = abs(num_to_sub) ;
+            for(long i = 0; i > iterator; i--){
+                ans = ans - num_to_sub ;
+                long max_neg = - pow(2, 31) ; // most -ve value we can accomodate in 32 bits
+                if(ans < max_neg){
+                    // overflow
+                    ans = ans - (2 * max_neg) ;  
+                }
+            }
+        }
+        register_map[rd_abi] = ans ;
+        pc = pc + 4 ;
+    }
+}
+
+
+
 void classifier(string & bcode,map<string, long> &register_map, map<int, string> &register_add_map, int & pc,map<string, int> &program_mem){
     string opcode;
     opcode = bcode.substr(25,7);
@@ -606,6 +703,9 @@ void classifier(string & bcode,map<string, long> &register_map, map<int, string>
 
     else if(opcode == "1101111"){
         j_simu(bcode, register_map, register_add_map, pc );
+    }
+    else if(opcode == "1111110"){
+        bonus_simu(bcode, register_map, register_add_map, pc );
     }
     else{
         pc=pc+4;
