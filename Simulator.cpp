@@ -549,7 +549,41 @@ void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
     }
 }
 
+void bonus_simu(string &bcode , map<string,long> &register_map, map<int, string> &register_add_map, int &pc){
+    string opcode = bcode.substr(25, 7) ;
+    string func3 = bcode.substr(17, 3) ;
 
+    string rs_bin = bcode.substr(12, 5) ; // binary representation of rs1
+    string rs_fin = '0' + rs_bin;
+    int rs = BinaryToInteger(rs_fin, 6) ; /* this is the corresponding number of the 
+    register in the file registers. */
+    string rs_abi = register_add_map[rs] ; // abi of rs
+
+    string rd_bin = bcode.substr(20, 5) ; // same story now for rd
+    string rd_fin = '0' + rd_bin;
+    int rd = BinaryToInteger(rd_fin, 6) ; 
+    string rd_abi = register_add_map[rd] ; // abi of rd
+
+    if(opcode == "1111110" && func3 == "000"){
+        // rst
+        for(int i = 1; i < 32; i++){ // Don't reset x0, it's always 0.
+            string reg_abi = register_add_map[i] ;
+            register_map[reg_abi] = 0 ;
+        }
+        pc = pc + 4 ;
+    }
+    else if(opcode == "1111110" && func3 == "001"){
+        // rvrs
+        string bin_of_rs = decimalToBinary32(register_map[rs_abi]) ;
+        string rev_ans = "" ;
+        for(int i = 31; i >= 0; i--){
+            rev_ans = rev_ans + bin_of_rs[i] ;
+        }
+        long long_int_of_rev_ans = BinaryToInteger(rev_ans, 32) ;
+        register_map[rd_abi] = long_int_of_rev_ans ;
+        pc = pc + 4 ;
+    }
+}
 
 
 void I_Type_Executer(string instruction, string register_array[]){
@@ -732,7 +766,10 @@ void classifier(string & bcode,map<string, long> register_map, map<int, string> 
     else if(opcode == "1101111"){
         j_simu(bcode, register_map, register_add_map, pc );
     }
-
+    else if(opcode == "1111110"){
+        bonus_simu(bcode, register_map, register_add_map, pc );
+    }
+        
     else{
         pc = pc + 1;
 
