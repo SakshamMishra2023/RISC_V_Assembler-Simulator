@@ -301,6 +301,7 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
 
     if(bcode.substr(0,7)=="0000000" && bcode.substr(17,3) == "000"){
        //  register_map[register_add_map[reg_no3]] = reg1 + reg2;
+        // add
         long ans = reg1 + reg2 ;
         long long max = pow(2, 31) ; // max positive value of 32 bits with 2's complement 
         if(ans >= max){
@@ -311,7 +312,15 @@ void r_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         pc = pc + 4 ;         
     }
     else if(bcode.substr(0,7)=="0100000" && bcode.substr(17,3) == "000"){
-        register_map[register_add_map[reg_no3]] = reg1 - reg2;
+        // sub
+        // register_map[register_add_map[reg_no3]] = reg1 - reg2;
+        long ans = reg1 - reg2 ;
+        long max_neg = - pow(2, 31) ; // most -ve value we can accomodate in 32 bits
+        if(ans < max_neg){
+            // overflow
+            ans = ans - (2 * max_neg) ;  
+        }
+        register_map[register_add_map[reg_no3]] = ans ;
         pc = pc + 4;
         
     }
