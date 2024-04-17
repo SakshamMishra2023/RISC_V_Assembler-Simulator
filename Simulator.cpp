@@ -570,7 +570,10 @@ void i_simu(string &bcode , map<string,long> &register_map, map<int, string> &re
         // jalr
         int return_addres = pc + 4 ; // the just next instruction
         int address_to_go = register_map[rs_abi] + imm_val ;
-
+        if(address_to_go % 2 != 0){
+            // address_to_go is an odd number, so we'll decrease it by one.
+            address_to_go = address_to_go - 1 ;
+        }
         register_map[rd_abi] = return_addres ; // save return address here.
         pc = address_to_go ; // now go here
     }
