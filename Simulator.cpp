@@ -619,7 +619,7 @@ void bonus_simu(string &bcode , map<string,long long> &register_map, map<int, st
     }
     else if(opcode == "1111110" && func3 == "010"){
         // mul
-        string rs2_bin = bcode.substr(12, 5) ;
+        string rs2_bin = bcode.substr(7, 5) ;
         string rs2_fin = '0' + rs2_bin ;
         int rs2 = BinaryToInteger(rs2_fin, 6) ; // corresp. no of rs2 in file registers
         string rs2_abi = register_add_map[rs2] ;
