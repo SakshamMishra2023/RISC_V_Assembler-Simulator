@@ -30,7 +30,7 @@ bool checkLastLine(string& filename, regex& regexPattern){
 
     return regex_search(lastNonEmptyLine, regexPattern);
 }
-string decimalToBinary32(int decimal) {
+string decimalToBinary32(int decimal){
     std::bitset<32> binaryRepresentation;
 
     if (decimal < 0) {
@@ -44,7 +44,7 @@ string decimalToBinary32(int decimal) {
 
     return binaryRepresentation.to_string();
 }
-string decimalToBinary16(int decimal) {
+string decimalToBinary16(int decimal){
     std::bitset<16> binaryRepresentation;
 
     if (decimal < 0) {
@@ -132,7 +132,7 @@ string b_assembler(string &line, unordered_map<string,string> &reg_map, int prog
     int lab = label_map[match[4]];
     int pc = program_counter;
     //cout<<pc<<" "<<lab;
-    int sub = lab -pc;
+    int sub = lab- pc;
     //cout<<sub;
     int imm = 4*sub ;
     //out<<imm;
@@ -328,7 +328,6 @@ string j_assembler(string &line, unordered_map<string,string> &reg_map, int &pro
             exit(1);
         }
 
-
     }
     }
 }
@@ -346,8 +345,6 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
     funct3_bi_rep["sltiu"] = "011";
     funct3_bi_rep["jalr"] = "000";
     
-    
-
     regex instruc1("\\s*(lw)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*\\(\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*\\)\\s*");
     regex instruc2("\\s*(addi|sltiu)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
     regex instruc3("\\s*(jalr)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|a[0-7])\\s*,\\s*(-?\\d+)\\s*");
@@ -413,7 +410,7 @@ string i_assembler(std::string& line, std::unordered_map<std::string, std::strin
     }
 }
 
-string u_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+string u_assembler(string& line, unordered_map<std::string, std::string>& reg_map) {
     std::unordered_map<std::string, std::string> opcode_bi_rep;
     opcode_bi_rep["lui"] = "0110111";
     opcode_bi_rep["auipc"] = "0010111";
@@ -723,12 +720,103 @@ string halt_assembler(string& line ){
     return bin_code;
 
 }
+
+//bonus instruction:
+string mul_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    
+
+    regex mul("\\s*(mul)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+
+    smatch match;
+    if(regex_match(line, match, mul)){
+        
+            string opcode_bi = "1111110";
+            string fun3 = "010";
+            string regs2 = reg_map[match[2]];
+            string regs1 = reg_map[match[3]];
+            string regd = reg_map[match[4]];
+
+            // Construct the output binary code
+            string output_bicode = "1111111" + regs2+regs1+ fun3 +regd+opcode_bi;
+
+            return output_bicode;        
+    }
+    
+}
+
+string rst_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    
+
+    regex rst("\\s*(rst)\\s*");
+
+    smatch match;
+    if(regex_match(line, match, rst)){
+
+
+            // Construct the output binary code
+            string output_bicode = "11111111111111111111110001111110";
+
+            return output_bicode;        
+    }
+    
+}
+
+string rvrs_assembler(std::string& line, std::unordered_map<std::string, std::string>& reg_map) {
+    
+
+    regex rvrs("\\s*(rvrs)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+
+    smatch match;
+    if(regex_match(line, match, rvrs)){
+        
+            string opcode_bi = "1111110";
+            string fun3 = "001";
+            string regs = reg_map[match[3]];
+            string regd = reg_map[match[2]];
+
+            // Construct the output binary code
+            string output_bicode = "111111111111" + regs + fun3  +regd+opcode_bi;
+
+            return output_bicode;        
+    }
+    
+}
+
 bool is_haltinstruc(string&line, unordered_map<string,string> &reg_map){
     regex hal("\\s*beq\\s+zero\\s*,\\s*zero\\s*,\\s*0\\s*");
     smatch match;
-    if(regex_match(line,match, hal)){
+    regex hal2("\\s*(halt)\\s*");
+    smatch match1;
+    if(regex_match(line,match, hal) || regex_match(line,match1,hal2)){
         return true;
     }
+}
+
+bool is_mulinstruc(string &line, unordered_map<string,string> &reg_map){
+    regex mul("\\s*(mul)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+    smatch match;
+    if(regex_match(line,match,mul)){
+        return true;
+    }
+
+}
+
+bool is_rstinstruc(string&line, unordered_map<string,string> &reg_map){
+
+    regex rst("\\s*(rst)\\s*");
+    smatch match;
+    if(regex_match(line,match, rst)){
+        return true;
+    }
+}
+
+bool is_rvrsinstruc(string &line, unordered_map<string,string> &reg_map){
+    regex rvrs("\\s*(rvrs)\\s+(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*,\\s*(zero|ra|sp|gp|tp|t[0-6]|s[0-9]|s10|s11|a[0-7])\\s*");
+    smatch match;
+    if(regex_match(line,match,rvrs)){
+        return true;
+    }
+
 }
 
 
@@ -775,6 +863,18 @@ string classifier(string &line, unordered_map<string,string> &reg_map,int &progr
         else if(is_jinstruction(line,label_map)){
             program_counter+=1;
             return j_assembler(line,reg_map,program_counter,label_map);
+        }
+        else if(is_mulinstruc(line,reg_map)){
+            program_counter+=1;
+            return mul_assembler(line,reg_map);
+        }
+        else if(is_rstinstruc(line,reg_map)){
+            program_counter+=1;
+            return rst_assembler(line,reg_map);
+        }
+        else if(is_rvrsinstruc(line,reg_map)){
+            program_counter+=1;
+            return rvrs_assembler(line,reg_map);
         }
      
         else{
@@ -924,7 +1024,6 @@ int main(){
 
     return 0;
 }
-
 
 
 
