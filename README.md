@@ -1,4 +1,4 @@
-# Computer_organization_Assembler
+# RISC_V_Assembler-Simulator
 A repository for storing and managing the code base for the the Assembler and Simulator project.
 
 Description :
